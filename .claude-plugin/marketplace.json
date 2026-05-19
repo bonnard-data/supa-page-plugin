@@ -1,0 +1,15 @@
+{
+  "name": "bonnard-data",
+  "owner": {
+    "name": "Bonnard Data",
+    "email": "max@bonnard.ai"
+  },
+  "plugins": [
+    {
+      "name": "supa-page-plugin",
+      "source": "./",
+      "description": "Build and deploy marketing sites on supa.page from Claude Code.",
+      "version": "0.1.0"
+    }
+  ]
+}
