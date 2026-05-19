@@ -9,7 +9,7 @@
       "name": "supa-page-plugin",
       "source": "./",
       "description": "Build and deploy marketing sites on supa.page from Claude Code.",
-      "version": "0.1.0"
+      "version": "0.1.2"
     }
   ]
 }

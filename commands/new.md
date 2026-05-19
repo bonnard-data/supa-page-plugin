@@ -53,15 +53,32 @@ The user wants to create a new supa.page site.
 
    The `title` field is **required** — omitting it produces a server-side render error.
 
-7. **Confirm.** Print one line:
+7. **Confirm.** Print:
    ```
-   Site "<name>" created. Edits in <site-dir>/source/ will auto-sync. Local preview: <server>/?site=<name>
+   Site "<name>" created. Edits in <site-dir>/source/ will auto-sync.
+   Preview (latest published): <server>/?preview=<name>
+
+   Note: <name>.supa.page is private by default. To let visitors view it
+   without signing in, open the dashboard and toggle "Public staging":
+     <dashboard>/orgs/<your-org>/sites/<name>
    ```
+   (Derive `<dashboard>` from `<server>` — `app.<apex>`. For local dev they're the same host.)
 
 ## Notes
 
 - Do not commit `.supa-page.json` to git — it contains the sync token. Add it to `.gitignore` if a `.git` exists in the parent.
 - After this command, any Write/Edit/MultiEdit inside `<site-dir>/source/` will trigger the sync hook automatically.
+- **Additional pages**: write `<site-dir>/source/pages/<slug>.json` (same shape as `index.json`, with a required `title` field). They auto-route to `/<slug>` and appear in `sitemap.xml`.
+- **Blog posts**: write `<site-dir>/source/posts/<slug>.md` with YAML frontmatter:
+  ```yaml
+  ---
+  title: My post
+  date: 2026-01-15
+  slug: my-post
+  published: true   # REQUIRED on production — drafts (omitted/false) appear in preview only
+  ---
+  ```
+  Without `published: true`, the post is a draft: it renders only via `?preview=<site>` and is excluded from the public `/posts` archive, RSS, and sitemap.
 
 ## If the sync hook isn't firing (manual fallback)
 

@@ -85,13 +85,40 @@ available.
 
    `mkdir -p` the dir first. Set the file to `chmod 600`.
 
-   Fetch the user via `/api/me` to confirm sign-in:
+6. **Check if first-time sign-in.** Fetch `/api/me`:
 
    ```bash
    curl -sS "<server>/api/me" -H "Authorization: Bearer <access_token>"
    ```
 
-   Then print: `✓ Signed in as <email>. Run /list to see your sites.`
+   Response includes `user.welcomed_at` (timestamp or null). If `null`, this is
+   the user's first sign-in — prompt them for a workspace name **right here in
+   the CLI**, then POST to `/api/welcome`:
+
+   ```
+   What should we call your workspace? (e.g. your name or company)
+   ```
+
+   ```bash
+   curl -sS -X POST "<server>/api/welcome" \
+     -H "Authorization: Bearer <access_token>" \
+     -H "Content-Type: application/json" \
+     -d "$(jq -cn --arg n "<workspace-name>" '{name: $n}')"
+   ```
+
+   Response: `{ok: true, org: {id, name, slug}}`. The slug is the URL handle
+   (so `bigfoot` becomes `<server>/orgs/bigfoot`).
+
+7. **Print success:**
+
+   ```
+   ✓ Signed in as <email>
+     Workspace: <name> (<server>/orgs/<slug>)
+     Run /new <site-name> to create your first site.
+   ```
+
+   If `welcomed_at` was non-null (returning user), skip the prompt + just
+   print: `✓ Signed in as <email>. Run /list to see your sites.`
 
 ## Notes
 

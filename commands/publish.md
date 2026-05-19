@@ -24,9 +24,15 @@ The user wants to publish the current supa.page site's staging state to producti
    ✓ Published — <message>
      snapshot: <snapshot>
      prod URL: <server>/?site=<name>
+
+   Note: new sites are private by default. Visit
+   <dashboard>/orgs/<your-org>/sites/<name> and toggle "Public staging"
+   to let visitors view <name>.supa.page without signing in.
    ```
+   (Where `<dashboard>` is `app.<apex>` — e.g. `https://app.supa.page`.)
 6. On error, surface the response and stop.
 
 ## Notes
 
-- Publish snapshots whatever is currently in `source/` on the server. If your latest edits haven't synced yet (sync hook didn't fire, server down), they won't be in the snapshot. Confirm with `/site-diff` first if unsure.
+- Publish snapshots whatever is currently in `source/` on the server. If your latest edits haven't synced yet (sync hook didn't fire, server down), they won't be in the snapshot. Confirm with `/diff` first if unsure.
+- **Staging visibility**: new sites have `staging_public = 0`, meaning `<name>.supa.page` redirects non-members to sign in. Toggle it from the dashboard — there's no plugin command for this yet. (Use `?preview=<name>` on the apex to view the latest published state without the gate, e.g. `https://supa.page/?preview=acme`.)
