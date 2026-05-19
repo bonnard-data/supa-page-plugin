@@ -1,0 +1,17 @@
+{
+  "description": "Auto-sync edits inside a supa.page site directory to the configured server.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/sync.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "supa-page-plugin",
+  "version": "0.1.0",
+  "description": "Build and deploy marketing sites on supa.page from Claude Code.",
+  "repository": "https://github.com/bonnard-data/supa-page-plugin",
+  "homepage": "https://supa.page",
+  "license": "MIT"
+}
