@@ -4,11 +4,20 @@ The official [Claude Code](https://claude.com/claude-code) plugin for [supa.page
 
 ## Install
 
+From inside Claude Code, run **both** commands:
+
 ```
+/plugin marketplace add bonnard-data/supa-page-plugin
 /plugin install supa-page-plugin@bonnard-data
 ```
 
-After installing, restart Claude Code to pick up the new commands.
+The first registers this repo as a plugin marketplace; the second installs the plugin from it. After installing, restart Claude Code to pick up the new commands.
+
+To get future updates:
+
+```
+/plugin marketplace update bonnard-data
+```
 
 ## What it does
 
