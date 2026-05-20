@@ -1,110 +1,63 @@
-# Snapshot internals
+# Publish atomicity + the static re-render pipeline
 
-The atomicity + concurrency guarantees the server makes when publishing.
+How `publish_site` commits in v0.4.0, and why production never sees a half-promoted state.
 
-## Snapshot ID format
+## The publish transaction
 
-```
-<ISO 8601 timestamp with `:` → `-`>-<8 hex chars>
-2026-05-20T15-30-42.000Z-deadbeef
-```
+A `/publish` call wraps the whole promotion + re-render in one transaction. In rough order:
 
-The random suffix guards against same-millisecond collisions. Without it, two simultaneous `/publish` calls would create the same directory name, and `mkdir({recursive: true})` would silently merge their contents.
+1. **Begin SQLite transaction.**
+2. For each content type:
+   - `INSERT OR REPLACE INTO pages SELECT * FROM pages_draft WHERE site_id = ?`
+   - `INSERT OR REPLACE INTO posts SELECT * FROM posts_draft WHERE site_id = ?`
+   - `INSERT OR REPLACE INTO site_config SELECT * FROM site_config_draft WHERE site_id = ?`
+3. Apply pending deletions — rows present in main but absent from drafts. (Discoverable via a left-join against `*_draft`.)
+4. Write a row to the `publishes` log table: `{ publish_id, site_id, message, promoted_at, summary }`.
+5. **Commit SQLite transaction.**
+6. Re-render the static HTML for every page + post + index + RSS + sitemap to a fresh temp directory.
+7. `rename(<temp>, <live>)` — atomic on POSIX (same filesystem).
 
-`isValidSnapshotId` regex (server-side):
+Steps 1–5 are atomic at the DB level. If 6 fails (disk full, render bug), the DB has already been promoted — production main is the new version, but Caddy is still serving the old static files. The next `publish_site` call will retry the re-render; in practice we also have a poller that re-renders on detection of stale static-mtime vs publish-time. Acceptable for indie scale.
 
-```
-^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.\d{3}Z(?:-[0-9a-f]{8})?$
-```
+## Why the renderer never sees a half-publish
 
-The legacy form (no suffix) still parses for pre-v0.1.3 snapshots that exist on disk.
+The static directory is swapped atomically via `rename`. Caddy's file-serving handler resolves the directory path on each request; a request that arrives mid-`rename` either sees the old directory or the new one, never both.
 
-## Publish atomicity
+The dynamic preview renderer reads from the `_draft` tables directly. It never sees the main tables mid-transaction because of SQLite's MVCC — readers see a consistent snapshot of committed rows.
 
-The publish dance:
+## Per-site serialisation
 
-1. `mkdir publishes/.tmp-<id>/` — staging directory with a `.tmp-` prefix so it's filtered out of `listPublishes`.
-2. `cp -r source/ publishes/.tmp-<id>/source/` — full directory copy.
-3. `writeFile publishes/.tmp-<id>/meta.json` — `{snapshot, timestamp, message}`.
-4. `rename publishes/.tmp-<id>/ → publishes/<id>/` — atomic on the same filesystem.
-5. `writeCurrentAtomic` — write to `.current.<rand>.tmp`, rename to `current.json`.
+A `Map<siteName, Promise>` chain in `publish.ts` serialises:
 
-Failure modes:
+- `publish_site(site)` calls
+- `discard_changes(site)` calls
+- bulk imports for that site
 
-- **Crash before step 4** → `.tmp-<id>/` is orphaned on disk but `current.json` is untouched. Production renders the prior snapshot. The orphan dir is hidden from `listPublishes`. A follow-up garbage-collect step (v0.1.4) sweeps these.
-- **Crash between steps 4 and 5** → New snapshot exists but `current.json` still points at the prior one. Production unchanged. Customer just sees one extra entry in `/api/publishes` they can roll forward to.
+Two simultaneous `/publish`es queue back-to-back, both succeed, second is the new main. Two `upsert_page`s in flight rely on SQLite's writer-serialisation — applied in order.
 
-The reader (production renderer) only ever sees `current.json` after both the snapshot is fully assembled AND the pointer is flipped. Never reads `.tmp-` directories.
+The mutex is per-site so unrelated sites don't block each other.
 
-## Per-site mutex
+## What v0.4.0 does NOT do
 
-`snapshots.ts` holds a `Map<siteName, Promise>` chain that serialises:
-
-- `publish(site)` calls
-- `rollback(site)` calls
-- `/api/sync` writes for that site
-
-So:
-
-- Two `/publish` calls in flight → run back-to-back, both succeed, second is the new HEAD.
-- `/sync` mid-`/publish` → the sync waits for publish to finish copying, then writes to `source/`. The published snapshot reflects the state at the moment publish started.
-- Two `/sync` calls in flight → applied in order. The pre-v0.1.3 race that left files 1..N-1 written when file N validated bad is gone (validation moved to a pre-pass; whole batch rejects atomically).
-
-The mutex is per-site, so unrelated sites don't block each other.
-
-## `current.json` write atomicity
-
-```ts
-writeCurrentAtomic(root, snapshot):
-  tmp = `.current.${random8}.tmp`
-  writeFile(tmp, JSON.stringify({snapshot}))
-  rename(tmp, 'current.json')
-```
-
-`rename` is atomic on POSIX (same filesystem). Readers always see the old contents or the new contents, never partial.
-
-There's no `fsync` between the write and the rename, so under hard power loss the rename can be visible while the file body is zero. Indie scale: acceptable. v0.1.4 will add `fsync` for robustness.
-
-## Rollback safety
-
-Before flipping `current.json`, rollback verifies:
-
-```ts
-stat(publishes/<snapshot>/source/site.json)
-```
-
-If that file is missing (the snapshot directory was manually deleted, leaving only `meta.json`), rollback returns null and `current.json` stays pointing at the prior snapshot.
-
-Without this check, manually-deleted snapshots with leftover meta.json would silently 404 the whole production site.
-
-## Retention
-
-Pre-v0.1.4: snapshots accumulate forever. At ~50KB per snapshot for a typical page-JSON site, this is years of headroom on a single VPS.
-
-The retention policy on the v0.1.4 roadmap:
-- Keep the last N=50 snapshots.
-- Keep everything younger than 90 days.
-- Keep the current snapshot.
-- Keep any explicitly "tagged" snapshot (future tagging feature).
-- Sweep `.tmp-<id>/` orphans nightly.
+- **No snapshot history.** Each `/publish` overwrites main. There is no rollback target.
+- **No cross-site atomicity.** Site A and site B publish independently.
+- **No cross-region replication.** Single Hetzner box; no DR replica.
+- **No fsync durability guarantee.** A hard power loss within a few seconds of a publish can lose the publish (SQLite WAL helps but is best-effort). Litestream → R2 is on the roadmap.
 
 ## Diff implementation
 
-`/api/diff?site=<name>` walks `source/` and `publishes/<current>/source/`, returns:
+`diff_site({site})` walks the `_draft` tables and joins against main:
 
 ```ts
 {
-  added: string[];     // in source/, not in published
-  modified: string[];  // in both, different content
-  deleted: string[];   // in published, not in source/
+  pages: { added: string[], modified: string[], deleted: string[] },
+  posts: { added: string[], modified: string[], deleted: string[] },
+  site_config: "unchanged" | "modified"
 }
 ```
 
-Modified comparison is full string read + compare. For typical-size JSON + Markdown content this is fast (KB-scale files). When asset hosting ships in v0.2 the comparator will switch to a size-then-hash short-circuit to avoid reading large binaries.
+`modified` compares serialised JSON for pages/posts (`JSON_EXTRACT` + string compare). Tombstone rows in `_draft` (representing pending deletes) show up as `deleted`.
 
-## What the platform does NOT guarantee
+## The publish log
 
-- **Cross-site atomicity.** If site A and site B publish at the same instant, there's no global lock — they're independent.
-- **Cross-region replication.** Single Hetzner box; no DR replica.
-- **fsync durability.** A hard power loss within ~30s of a publish can lose the publish (file system journal helps but isn't guaranteed). Litestream → R2 is on the roadmap.
-- **Backward compat of legacy snapshot IDs.** Pre-v0.1.3 snapshots (no random suffix) still parse via the older regex; the catalogue regex accepts both forms. v0.2 may drop legacy compatibility — keep a backup if you need long retention.
+The `publishes` table stores `{ publish_id, site_id, message, promoted_at, summary }` for every publish. It exists for audit + the dashboard's history view — not for rollback. The `list_publishes` MCP tool was removed in v0.4.0; the dashboard remains the way to inspect history.

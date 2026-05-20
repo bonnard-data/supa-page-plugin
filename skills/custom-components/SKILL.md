@@ -1,7 +1,7 @@
 ---
 name: custom-components
 description: This skill should be used as a LAST RESORT when the user wants custom UI that the 15-section catalogue + theme overrides + raw-embed can't express — e.g. "add a custom Lit component", "build a custom interactive widget", "add a price calculator", "author a custom section type", "add an animated mockup". Read this skill before writing JS; in 90% of cases the right answer is `raw-embed` or a token override, not a custom component.
-version: 0.1.3
+version: 0.4.0
 ---
 
 # Custom Lit components on supa.page
@@ -12,9 +12,9 @@ This is the **last rung** of the customization ladder. Almost everything custome
 
 When the customer asks for something the catalogue doesn't cover, climb in this order:
 
-1. **Edit a section prop.** New eyebrow? `eyebrow: "..."`. New CTA? `cta: {...}`.
-2. **Edit `theme_overrides` in site.json.** (See the `theme-tokens` skill.) Different brand color, font, border radius — these are token overrides, not new components.
-3. **Edit `header`/`footer` in site.json.** Custom nav, footer links.
+1. **Edit a section prop.** New eyebrow? `eyebrow: "..."`. New CTA? `cta: {...}`. (Via `upsert_page`.)
+2. **Edit `theme_overrides` via `update_site_config`.** (See the `theme-tokens` skill.) Different brand color, font, border radius — these are token overrides, not new components.
+3. **Edit `header`/`footer` via `update_site_config`.** Custom nav, footer links.
 4. **Add a `raw-embed` section.** One-off HTML+CSS, shadow-DOM scoped. Covers ~95% of "we need something the catalogue doesn't have."
 5. **Author a custom Lit component.** This skill. Rare. Real interactive widgets only.
 
@@ -39,11 +39,13 @@ You only need a custom Lit component when:
 
 ## How customer-authored Lit works
 
-The renderer in `src/custom-sections.ts` dynamically imports each unknown section type from:
+The renderer in `src/custom-sections.ts` dynamically imports each unknown section type from the platform's per-site components directory:
 
 ```
-<site-dir>/source/components/<type>/<type>.js
+<platform-root>/components/<site>/<type>/<type>.js
 ```
+
+Unlike pages and posts, components are **not** stored in SQLite — they're real files on the platform host. v0.4.0 has no MCP tool that lets you upload a component file; the (rare) sites that ship custom components have them installed by a maintainer on the box. A first-class component-upload tool is on the roadmap.
 
 The file must `export default` (or named `export`) a function with this signature:
 
@@ -54,7 +56,7 @@ export function render({ section, html }) {
 ```
 
 Where:
-- `section` is the section object from the page JSON
+- `section` is the section object from the page row's `sections[]`
 - `html` is `lit`'s html tagged-template — you don't need to import it
 - The return value is a Lit `TemplateResult`
 
@@ -64,24 +66,24 @@ The component renders via the same `@lit-labs/ssr` pipeline that powers the buil
 
 **The component runs in the same Bun process that serves all customer sites.** Reading customer-authored JS is a real footgun for multi-tenant deployments:
 
-- **Right now (v0.1.3):** single-tenant alpha — the only people writing custom components are people you trust (you, your team).
-- **Future (post-v0.2):** multi-tenant requires sandboxing — `isolated-vm` per-component or per-site Bun subprocesses. Track issue [tbd] on the roadmap.
+- **Right now:** single-tenant alpha — the only people writing custom components are people you trust (you, your team).
+- **Future:** multi-tenant requires sandboxing — `isolated-vm` per-component or per-site Bun subprocesses. Track issue [tbd] on the roadmap.
 
 Don't ship customer-authored components on a multi-tenant production until the sandbox lands. The current implementation will refuse to load components from sites whose org is not yours.
 
-## Author flow
+## Author flow (current, manual)
 
-1. Create the directory: `<site-dir>/source/components/<type>/`
-2. Author `<type>.js` exporting a `render` function.
-3. Reference it in page JSON:
+1. Author `<type>.js` exporting a `render` function (one file per component).
+2. Drop it on the platform host at `<platform-root>/components/<site>/<type>/<type>.js`.
+3. Reference it in a page upsert:
 
    ```json
    { "type": "price-calculator", "starting": 0, "rate": 9 }
    ```
 
-   The renderer dispatches `type: "price-calculator"` → imports `source/components/price-calculator/price-calculator.js`.
+   The renderer dispatches `type: "price-calculator"` → imports `<platform-root>/components/<site>/price-calculator/price-calculator.js`.
 
-4. Sync. Publish. The component renders.
+4. `/publish`. The component renders.
 
 ## Naming rules
 
@@ -104,7 +106,7 @@ No — `theme_overrides` change colors. A custom component is the wrong tool.
 
 ### "I'll write my own pricing component because pricing doesn't have a billing-toggle"
 
-The `pricing` section type doesn't ship a monthly/yearly billing toggle in v0.1.3 (deferred per the audit). The right paths are:
+The `pricing` section type doesn't ship a monthly/yearly billing toggle (deferred per the audit). The right paths are:
 
 - Use the `billing_note` field to set context ("Monthly. Switch to annual for 20% off → /pricing-annual"), and use two separate pages.
 - File a feature request for native billing toggle.
@@ -117,8 +119,8 @@ If it's `<script src="...">` + a target div, that's a `raw-embed`. Custom compon
 
 ### "I'll use a custom component to add JS to every page"
 
-That's a global-script injection problem. The right answer is the future Site-wide chrome scripts feature; until then, put it in every page's `raw-embed`.
+That's a global-script injection problem. The right answer is the future site-wide chrome scripts feature; until then, put it in every page's `raw-embed`.
 
 ## Additional resources
 
-- **`examples/`** — one canonical custom-component example (`acme-pricing-toggle`) showing the file layout, the render-function signature, and the page-JSON wiring.
+- **`examples/`** — one canonical custom-component example (`acme-pricing-toggle`) showing the file layout, the render-function signature, and the page-row wiring.

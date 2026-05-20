@@ -1,0 +1,9 @@
+{
+  "slug": "draft-post",
+  "title": "Work in progress",
+  "date": "2026-05-21",
+  "published": false,
+  "excerpt": "Notes from a redesign-in-flight.",
+  "tags": ["design", "in-progress"],
+  "body": "This post is a draft (`published: false`). It renders at `/posts/draft-post` only via the preview channel (`?preview=1`).\n\nIt does **not** appear in `/posts`, RSS, sitemap, or any `post-feed` section — even after `/publish`.\n\nTo ship it: upsert again with `published: true`, then run `/publish`.\n\n## Why drafts work this way\n\nPosts have two independent gates:\n\n1. The row-level `published` boolean — your decision per post.\n2. The drafts/main table promotion — your decision per publish.\n\nBoth must be open for the post to be on production. This lets you publish other content without accidentally shipping a half-written post.\n"
+}

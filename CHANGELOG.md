@@ -3,6 +3,91 @@
 All notable changes to the supa.page plugin. This project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-05-20
+
+### Typed CRUD + drafts model
+
+v0.2.0 — v0.3.x stored every site as a `source/` directory on disk per site
+and shipped content edits through one big `sync_files` MCP tool that
+batched file writes. Publishes snapshotted the whole tree; `rollback_site`
+flipped a `current.json` pointer between snapshots.
+
+v0.4.0 makes the platform database the source of truth and gives every
+content type its own typed CRUD surface. The on-disk `source/` tree, the
+snapshot history, and the single batch-write tool are gone.
+
+**New tool surface (23 tools, up from 14):**
+
+```
+Identity:           whoami
+Sites:              list_sites · get_site · create_site · set_visibility
+                    update_site_config            (NEW)
+Pages:              list_pages · get_page · upsert_page · delete_page   (ALL NEW)
+Posts:              list_posts · get_post · upsert_post · delete_post   (ALL NEW)
+Lifecycle:          diff_site · publish_site · discard_changes          (discard NEW)
+Domains:            list_domains · add_domain · remove_domain · recheck_domain
+```
+
+**Removed:**
+- `sync_files` — replaced by typed CRUD per content type.
+- `rollback_site` — no snapshot history in v0.4.0. Edit forward and re-publish.
+- `list_publishes` — the dashboard remains the way to inspect publish history.
+
+**Drafts + publish model:**
+
+Edits land in `*_draft` tables. `publish_site` promotes drafts → main in
+a single SQLite transaction, then re-renders the static HTML served by
+Caddy. `<site>.supa.page` updates immediately on publish (within ~100ms;
+no snapshot-copy step). `discard_changes` throws away drafts without
+touching main.
+
+**Live preview SSE:**
+
+The preview channel is now `<site>.supa.page/?preview=1`. It reads from
+the `*_draft` tables and opens an SSE channel — any open preview tab
+reloads automatically when a draft row changes.
+
+**Plugin skills (new):**
+- `/edit-page` — read-modify-write on a page row
+- `/edit-post` — same for blog posts
+- `/delete-page`, `/delete-post` — gated with confirmation
+- `/discard-changes` — show diff, confirm, reset drafts
+- `/update-theme` — patch `site_config` (theme, theme_overrides, header, footer)
+
+**Plugin skills (removed):**
+- `/rollback` — no rollback tool to wrap.
+
+**Knowledge skills updated:**
+
+Every knowledge skill (`section-catalogue`, `theme-tokens`, `posts-and-blog`,
+`custom-components`, `custom-domains`, `publishing-workflow`) has been
+rewritten to remove references to `source/` directories, `sync_files`,
+and snapshot history. Examples + references reflect the typed-object
+model. Local validators (`validate-section.js`,
+`validate-frontmatter.js`, `validate-theme-overrides.js`) still ship —
+they now validate the typed objects you pass to `upsert_*`.
+
+**Agents updated:**
+
+- `site-author` now authors via `upsert_page` / `upsert_post` /
+  `update_site_config` and reads existing content via `get_page` /
+  `get_post`.
+- `content-validator` reads pages + posts via the typed CRUD surface
+  and runs the same per-shape validators against each fetched row.
+
+### Breaking changes for v0.2.x / v0.3.x users
+
+- **`sync_files` is gone.** Agents that called it must switch to
+  `upsert_page`, `upsert_post`, and `update_site_config`. Each call takes
+  the full typed object and replaces the matching draft row.
+- **`rollback_site` and `list_publishes` are gone.** If a publish was a
+  mistake, edit forward and publish again. The dashboard still surfaces
+  the publish log for audit.
+- **No on-disk `source/` tree.** There's nothing to sync. Pages and posts
+  are SQLite rows; content lives only on the server.
+- **Preview URL changed.** `https://supa.page/?preview=<site>` →
+  `https://<site>.supa.page/?preview=1`.
+
 ## [0.2.0] — 2026-05-20
 
 ### MCP-only — bash auth + bash skills + sync hook removed

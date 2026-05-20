@@ -1,7 +1,7 @@
 ---
 name: custom-domains
 description: This skill should be used when wiring a custom domain to a supa.page site, when troubleshooting "my domain isn't working", "HTTPS isn't issuing", "DNS check failed", "what records do I add", "apex vs subdomain", "Cloudflare proxy", or any task involving `/domain-add`, `/domain-list`, `/domain-recheck`, `/domain-remove`, DNS configuration, or TLS issuance via Caddy on-demand TLS.
-version: 0.1.3
+version: 0.4.0
 ---
 
 # Custom domains on supa.page

@@ -2,11 +2,13 @@
  * Example custom Lit section: acme-pricing-toggle
  *
  * Demonstrates the customer-authored-component contract:
- *   - file at <site-dir>/source/components/acme-pricing-toggle/acme-pricing-toggle.js
+ *   - file at <platform-root>/components/<site>/acme-pricing-toggle/acme-pricing-toggle.js
+ *     (manually installed on the platform host in v0.4.0; a first-class upload
+ *     tool is on the roadmap)
  *   - exports a `render({section, html})` function returning a Lit TemplateResult
  *   - references theme CSS vars (--accent, --bg-alt) so it inherits whichever preset is active
  *
- * Page JSON wiring:
+ * Page row wiring (set via `upsert_page`, in the `sections[]` array):
  *
  *   {
  *     "type": "acme-pricing-toggle",

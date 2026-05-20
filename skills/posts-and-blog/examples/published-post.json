@@ -1,0 +1,10 @@
+{
+  "slug": "shipped-v0-4-0",
+  "title": "How we shipped v0.4.0",
+  "date": "2026-05-20",
+  "published": true,
+  "excerpt": "A retro on the supa.page typed-CRUD + drafts release — sync_files retired, rollback removed, SQLite as source of truth.",
+  "tags": ["engineering", "retros"],
+  "og_image": "https://cdn.example.com/og/v0.4.0.png",
+  "body": "Two-week sprint to flip supa.page off the file-based source tree and onto typed CRUD over SQLite. Here's what landed and what we cut.\n\n## The shape change\n\nPre-v0.4.0, content lived in a `source/` directory on disk per site — `source/site.json`, `source/pages/*.json`, `source/posts/*.md`. Edits went through a `sync_files` MCP tool that batched file writes. It worked, but the file tree was a leaky abstraction: snapshot history forced us to keep N copies on disk per publish, the diff implementation re-read the whole tree, and we couldn't add row-level features (per-page A/B, per-post `published` flags backed by indexes) without inventing a sidecar database anyway.\n\nv0.4.0 makes the database the source of truth. Pages, posts, and site_config are typed columns. The MCP surface grew typed CRUD per content type:\n\n- `list_pages`, `get_page`, `upsert_page`, `delete_page`\n- `list_posts`, `get_post`, `upsert_post`, `delete_post`\n- `update_site_config`\n\nPlus a `discard_changes` tool to throw away drafts.\n\n## What got cut\n\n- `sync_files` — replaced by typed CRUD.\n- `rollback_site` + `list_publishes` + snapshot history — the right answer is to edit forward and re-publish.\n- The on-disk `source/` tree — there's nothing to sync.\n\n## What got better\n\n- `<site>.supa.page` updates within ~100ms of `/publish` (vs ~2s of snapshot-copy before).\n- The preview channel opens an SSE stream and live-reloads on draft writes.\n- Diff is a single SQL query.\n"
+}

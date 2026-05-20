@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 /**
- * Pre-flight validator for supa.page page JSON.
+ * Pre-flight validator for supa.page page objects.
  *
- * Mirrors the same check that runs on the server at /api/sync — see
+ * Mirrors the same check the server runs inside `upsert_page` — see
  * src/validate.ts in the supa-page repo. Catch malformed pages locally
  * so you don't waste an API call.
  *
  * Usage:
  *   node validate-section.js <file.json>
- *   node validate-section.js path/to/site/source/pages/index.json
+ *   node validate-section.js /tmp/draft-page.json
+ *
+ * Pass any JSON file containing a page object (`{title, sections[], ...}`);
+ * the location on disk doesn't matter.
  *
  * Exits 0 if valid; 1 with a single-line `{error, field}` JSON to stderr
  * if not.

@@ -1,39 +1,40 @@
-# A typical edit-sync-publish session (v0.2.0)
+# A typical edit-diff-publish session (v0.4.0)
 
-Annotated walk-through of a normal supa.page workflow. Read it once; it'll
-inform what the agent does the next time someone says "update the hero copy
-and ship it."
+Annotated walk-through of a normal supa.page workflow under the typed CRUD + drafts model. Read it once; it'll inform what the agent does the next time someone says "update the hero copy and ship it."
 
 ## 0. Starting state
 
-The user has already authenticated this Claude Code session via `/mcp` →
-**Authenticate**. The 14 supa.page MCP tools are available. There's no
-local config file, no `.supa-page.json` marker — the agent tracks
-"which site are we working on?" from conversation context.
+The user has already authenticated this Claude Code session via `/mcp` → **Authenticate**. The 23 supa.page MCP tools are available. There's no local config file, no source/ tree on disk — the agent tracks "which site are we working on?" from conversation context.
 
 ## 1. Edit a section
 
-User: "Update the hero headline on `my-product` to 'Ship 10x faster' and
-change the CTA to 'Try it free'."
+User: "Update the hero headline on `my-product` to 'Ship 10x faster' and change the CTA to 'Try it free'."
 
-Agent calls `sync_files` with the patched page JSON:
+Agent reads the current page first (so it can patch precisely without losing other sections):
 
-```json
-{
-  "site": "my-product",
-  "files": [
-    {
-      "path": "pages/index.json",
-      "content": "{ \"title\": \"My product\", \"sections\": [ { \"type\": \"hero\", \"title\": \"Ship 10x faster\", \"cta\": { \"label\": \"Try it free\", \"href\": \"/signup\" } } ] }\n"
-    }
-  ]
-}
+```
+get_page({site: "my-product", slug: "index"})
 ```
 
-Response: `{"synced": 1, "removed": 0, "warnings": []}`.
+Returns the full page object. Agent patches it locally — changes the hero `title` and `cta.label` — then writes it back:
 
-The new copy is live in **preview** (`https://supa.page/?preview=my-product`)
-but not yet on production.
+```
+upsert_page({
+  site: "my-product",
+  slug: "index",
+  page: {
+    title: "My product",
+    sections: [
+      { type: "hero", title: "Ship 10x faster", cta: { label: "Try it free", href: "/signup" } },
+      ...
+    ]
+  }
+})
+```
+
+Response: `{ ok: true, draft: true }`.
+
+The new copy is live in **preview** (`https://my-product.supa.page/?preview=1`) but not yet on production. Any open preview tab reloads automatically via SSE.
 
 ## 2. Diff before publish
 
@@ -42,10 +43,14 @@ User: "What's changed since last publish?"
 Agent calls `diff_site({site: "my-product"})`:
 
 ```
-~ pages/index.json     (modified)
+{
+  pages: { added: [], modified: ["index"], deleted: [] },
+  posts: { added: [], modified: [], deleted: [] },
+  site_config: "unchanged"
+}
 ```
 
-Just the one file. Looks right.
+Just the one page. Looks right.
 
 ## 3. Publish
 
@@ -55,42 +60,41 @@ Agent calls `publish_site({site: "my-product", message: "headline + CTA copy upd
 
 ```
 {
-  "snapshot": "2026-05-20T15-30-42.000Z-deadbeef",
-  "message": "headline + CTA copy update"
+  publish_id: 42,
+  message: "headline + CTA copy update",
+  promoted: { pages: 1, posts: 0, site_config: false }
 }
 ```
 
-Production now serves the new headline.
+Production serves the new headline within ~100ms — the static HTML re-render runs as part of the publish transaction.
 
 ## 4. Realise the CTA href was wrong
 
 User: "Wait, the signup URL is /start, not /signup."
 
-Agent edits the file again via `sync_files`, then calls `publish_site` again:
+Same loop: `get_page` → patch → `upsert_page` → `publish_site` again.
 
 ```
-{
-  "snapshot": "2026-05-20T15-31-15.000Z-cafe0001",
-  "message": "fix CTA href"
-}
+{ publish_id: 43, ... }
 ```
 
-Two snapshots in the history now.
+No rollback semantics — the second publish overwrites the first on production. The publish log keeps both entries for audit, but there's no `/rollback` command in v0.4.0.
 
-## 5. The next day — roll back a bad release
+## 5. Cleared draft drift
 
-User: "I broke pricing this morning. Roll back."
+User: "I edited the pricing page yesterday but never published. Throw the drafts away."
 
-Agent calls `list_publishes({site: "my-product"})`, surfaces the recent
-snapshots, asks the user which one to roll back to, then calls
-`rollback_site({site, snapshot})`. `current.json` flips back; production
-serves the prior snapshot. The staging tree is untouched — the user can
-fix what they broke and re-publish.
+Agent calls `diff_site` to confirm what would be lost, summarises it ("pricing.json modified — 3 sections changed"), confirms with the user, then calls:
+
+```
+discard_changes({site: "my-product", kind: "page", slug: "pricing"})
+```
+
+The `pages_draft` row for `pricing` is reset to the current `pages` row. Live main is untouched.
 
 ## Mental model recap
 
-- **`sync_files`** updates staging on the server. Visible in preview immediately.
-- **`publish_site`** snapshots staging → makes it production.
-- **`rollback_site`** changes which snapshot is "live" — doesn't touch staging.
-- **Source/** is the staging tree; **publishes/** is the history;
-  **current.json** is the pointer the renderer follows.
+- **`upsert_page` / `upsert_post` / `update_site_config`** write to draft tables. Visible in preview (`?preview=1`) immediately + SSE reload.
+- **`publish_site`** promotes drafts to main + re-renders static HTML. Live URL updates immediately.
+- **`discard_changes`** resets draft rows to match main. Main is never touched.
+- **No snapshot history.** No `/rollback`. Edit forward and re-publish.

@@ -110,7 +110,7 @@ Defaults: `width: "prose"`, `background: "bg"`.
 | `show_excerpt` | boolean | `true` | When `false`, render just title + date. |
 | `featured` | boolean | `false` | When `true`, only show posts whose frontmatter has `featured: true`. |
 
-Posts are read from `source/posts/*.md`. See the `posts-and-blog` skill for frontmatter rules.
+Posts are read from the `posts` table for the site. See the `posts-and-blog` skill for frontmatter rules.
 
 Defaults: `width: "default"`, `background: "bg"`.
 
