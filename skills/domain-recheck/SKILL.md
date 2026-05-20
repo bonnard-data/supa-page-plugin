@@ -1,24 +1,12 @@
 ---
 description: Force a DNS re-check on a custom domain
 argument-hint: <domain>
-allowed-tools: Bash, AskUserQuestion
-model: haiku
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__recheck_domain, AskUserQuestion
+model: sonnet
 ---
 
-Force an immediate DNS re-check on a domain.
+The user wants to nudge supa.page to re-verify a custom domain's DNS.
 
-If `$ARGUMENTS` is empty, first show the current domains:
+Get the domain from `$ARGUMENTS`. If empty, use AskUserQuestion (header "Domain", description: "The domain to re-check, e.g. www.example.com").
 
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/domain-list.sh
-```
-
-Then use AskUserQuestion to pick one (header "Re-check which?"). Otherwise pass `$ARGUMENTS` directly.
-
-Then run:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/domain-recheck.sh "<domain>"
-```
-
-Present the output verbatim. Icons: `✓` ok, `⏳` propagating, `⚠` resolves elsewhere.
+Call `mcp__plugin_supa-page-plugin_supa-page__recheck_domain` with `{domain}`. Surface the response: if it now resolves correctly, congratulate; if it still mismatches, show the expected vs actual records and remind the user to update at their registrar.

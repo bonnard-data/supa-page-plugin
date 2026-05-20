@@ -1,12 +1,12 @@
 ---
-description: Sign out of supa.page on this machine (revokes the session server-side)
-allowed-tools: Bash
+description: Sign out of supa.page (handled by Claude Code's MCP dialog)
 model: haiku
-disable-model-invocation: true
 ---
 
-Revoke the local session and delete `~/.config/supa-page/session.json`.
+As of v0.2.0, sign-out is handled by Claude Code's MCP machinery — there's no separate token file to clear.
 
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/signout.sh`
+Tell the user:
 
-Present the output verbatim. `disable-model-invocation` is set so background loops can't sign the user out unexpectedly — only a direct `/signout` invocation can reach this.
+> Open `/mcp`, select **plugin:supa-page-plugin:supa-page**, and choose **Clear authentication**. The cached OAuth token is dropped; the next MCP tool call will trigger a fresh sign-in.
+
+If they want to fully revoke the token server-side (so it can't be replayed from a stolen `~/.claude/...` file), they can also sign out from `https://app.supa.page` — that revokes the underlying Better Auth session, which cascades to all OAuth tokens issued under it.

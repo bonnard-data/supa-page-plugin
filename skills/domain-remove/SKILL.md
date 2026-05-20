@@ -1,25 +1,13 @@
 ---
-description: Unregister a custom domain from the current site
+description: Unregister a custom domain from a site (DNS at registrar is untouched)
 argument-hint: <domain>
-allowed-tools: Bash, AskUserQuestion
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__remove_domain, AskUserQuestion
 model: sonnet
 disable-model-invocation: true
 ---
 
-The user wants to remove a custom domain. `disable-model-invocation` is set — only a direct invocation can reach this; subagents can't remove a domain.
+The user wants to detach a custom domain from a site. `disable-model-invocation: true` — destructive; a human always confirms.
 
-If `$ARGUMENTS` is empty, first show the current domains by running:
+Get the domain from `$ARGUMENTS`. If empty, use AskUserQuestion (header "Domain to remove", description: "The domain to unregister, e.g. www.example.com").
 
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/domain-list.sh
-```
-
-Then use AskUserQuestion to confirm which domain to remove (header "Remove which?"). Otherwise pass `$ARGUMENTS` directly.
-
-Then run:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/domain-remove.sh "<domain>"
-```
-
-Present the output verbatim. On 404 ("not owned"), suggest `/domain-list` to confirm the spelling.
+Call `mcp__plugin_supa-page-plugin_supa-page__remove_domain` with `{domain}`. Confirm the unbind and remind the user this does NOT update DNS at their registrar — they may still want to delete the CNAME/A record there.

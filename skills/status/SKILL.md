@@ -1,11 +1,12 @@
 ---
-description: Show the current site's name, server, sign-in state, and basic health
-allowed-tools: Bash
+description: Show one site's current state (visibility, URLs, last publish)
+argument-hint: [site]
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__get_site, mcp__plugin_supa-page-plugin_supa-page__list_sites, AskUserQuestion
 model: haiku
 ---
 
-Show the user the status of the supa.page site they're working in.
+The user wants the current state of a site.
 
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/status.sh`
+If `$ARGUMENTS` is non-empty, treat it as the site name. Otherwise call `list_sites` and either pick the obvious one from conversation context, or use AskUserQuestion to let the user choose.
 
-Present the output above verbatim. If the user isn't in a site directory or isn't signed in, the script handles the messaging — pass it through.
+Then call `mcp__plugin_supa-page-plugin_supa-page__get_site` with that name and present: name, visibility, org, and the live + preview URLs.

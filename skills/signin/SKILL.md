@@ -1,42 +1,15 @@
 ---
-description: Sign in to supa.page from this machine (browser device-flow)
-allowed-tools: Bash, AskUserQuestion
-model: sonnet
+description: Sign in to supa.page (handled by Claude Code's MCP OAuth flow)
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__whoami
+model: haiku
 ---
 
-The user wants to sign in to their supa.page account. This uses the OAuth 2.0 Device Authorization Grant (RFC 8628) — same pattern as `gh auth login`, AWS CLI, Stripe CLI. The user authorizes the CLI from their browser, the CLI polls until the bearer is issued.
+As of v0.2.0, sign-in is handled by Claude Code's MCP OAuth flow — there's no separate `/signin` device dance to run.
 
-**Step 1: request a device code.**
+To check current auth state, call `mcp__plugin_supa-page-plugin_supa-page__whoami`. If it succeeds, present the user's identity ("Signed in as `<email>` · org `<slug>`") and stop.
 
-!`bash ${CLAUDE_PLUGIN_ROOT}/scripts/signin-init.sh`
+If `whoami` returns an auth error, tell the user:
 
-Show the user the verification URL and code from the output above. Extract the line `DEVICE_CODE=<value>` to use for polling.
+> Open `/mcp`, select **plugin:supa-page-plugin:supa-page**, and choose **Authenticate**. Your browser will open for the OAuth consent step. Once approved, all supa.page MCP tools become available automatically.
 
-**Step 2: poll for the bearer.** Run via the Bash tool (not `!` — this can take up to 15 minutes):
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/signin-poll.sh "<device_code>"
-```
-
-If the output starts with `✓ Signed in as ...`, you're done — present that to the user.
-
-**Step 3 (first-time only): complete the welcome.** If the poll output contains `NEEDS_WELCOME=1`, the user has no workspace yet. Extract `EMAIL=...`, `TOKEN=...`, and `SERVER=...` from the output, then ask:
-
-- question: "What should we call your workspace?"
-- header: "Workspace"
-- description: "Examples: your name, your company, your project — e.g. \"bigfoot\", \"acme\"."
-
-Then run via the Bash tool:
-
-```bash
-SUPA_TOKEN="<token>" bash ${CLAUDE_PLUGIN_ROOT}/scripts/signin-welcome.sh "<workspace-name>" "<server>"
-```
-
-Present the welcome script's output verbatim.
-
-**Failure cases (from signin-poll.sh):**
-- Exit 3: user denied authorization in the browser — tell them and suggest re-running.
-- Exit 4: code expired (>15 min) — tell them and suggest re-running.
-- Exit 5/6: unexpected / timeout — surface the error.
-
-**Note for returning users:** if they're already signed in, this command silently overwrites the local session. Running `/signin` is also the recovery path if `~/.config/supa-page/session.json` got corrupted.
+First-time users will be bounced through the supa.page dashboard's email-OTP / GitHub / Google sign-in and a one-time workspace-name step before the consent screen.

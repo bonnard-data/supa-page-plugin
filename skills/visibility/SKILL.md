@@ -1,26 +1,16 @@
 ---
-description: Set site visibility — public lets anyone view it, private gates to org members
-argument-hint: [public|private]
-allowed-tools: Bash, AskUserQuestion
+description: Toggle a site between public and private
+argument-hint: [site] public|private
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__set_visibility, mcp__plugin_supa-page-plugin_supa-page__list_sites, AskUserQuestion
 model: sonnet
 ---
 
-The user wants to change the current site's visibility.
+The user wants to change a site's visibility.
 
-If `$ARGUMENTS` is `public` or `private`, use it directly. Otherwise use AskUserQuestion:
+Parse `$ARGUMENTS`: it may be `<site> <public|private>`, just `<public|private>`, or empty.
 
-- question: "Who should be able to view <site>.supa.page?"
-- header: "Visibility"
-- options:
-  - **Public** — Anyone can view
-  - **Private** — Only signed-in org members can view
+Resolve the site name (use the explicit one, else pick from context, else `list_sites` + AskUserQuestion).
 
-Then run:
+Resolve the visibility value (`public` or `private`). If neither was passed, use AskUserQuestion with two options (Public, Private) and the implications: public = anyone with the URL can view, private = only org members.
 
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/visibility.sh "<value>"
-```
-
-Present the output verbatim.
-
-Note: visibility is a long-lived site property, separate from publishing. No need to re-publish after toggling. The preview URL (`<server>/?preview=<site>`) is always reachable by site owners regardless of visibility.
+Call `mcp__plugin_supa-page-plugin_supa-page__set_visibility` with `{site, visibility}`. Confirm the change and (for public) show the live URL `https://<site>.supa.page`.

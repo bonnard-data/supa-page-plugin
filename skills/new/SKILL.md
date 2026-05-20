@@ -1,24 +1,18 @@
 ---
-description: Create a new supa.page site and scaffold local files
-argument-hint: <site-name>
-allowed-tools: Bash, AskUserQuestion
+description: Create a new supa.page site with a default page + initial publish
+argument-hint: <name>
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__create_site, AskUserQuestion
 model: sonnet
 ---
 
 The user wants to create a new supa.page site.
 
-If `$ARGUMENTS` is non-empty, use it as the site name. Otherwise use AskUserQuestion (header "Site name", description: "Lowercase kebab-case, 1-64 chars, e.g. `vibrant-otter`") to get one.
+Get the name from `$ARGUMENTS`. If empty, use AskUserQuestion (header "Site name", description: "Lowercase kebab-case, 1-64 chars, e.g. `acme-launch`").
 
-Then run:
+Call `mcp__plugin_supa-page-plugin_supa-page__create_site` with `{name}` (omit `org` unless the user is in multiple orgs and specified one). Surface the returned preview + live URLs.
 
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/new.sh "<name>"
-```
+Then tell the user:
+- "Use `sync_files` (via me) to author your site — `site.json` for theme, `pages/<slug>.json` for pages, `posts/<slug>.md` for blog posts."
+- "Run `/publish <name>` when you want to roll out changes, `/visibility <name> public` to make it world-readable."
 
-Present the output verbatim. Exit code handling:
-- 0: success — site reserved on server + scaffolded to `./<name>/`.
-- 2: session expired — suggest `/signin`.
-- 64: invalid name (the script logs the rule) — ask the user for a valid name and retry.
-- 1: name taken (409) or generic error — surface and ask for another name on 409.
-
-After success, mention: "Now edit `./<name>/source/pages/index.json` with Claude — the PostToolUse sync hook keeps it in sync with the server. When ready, `/publish`."
+If the tool errors with "already taken", ask for another name. If it errors with "no organization", direct the user to sign up via the dashboard first.

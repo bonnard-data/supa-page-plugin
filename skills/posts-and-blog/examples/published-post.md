@@ -14,16 +14,14 @@ arguably should have been v0.2. Here's what landed and what we cut.
 
 The single biggest change: dropping per-site sync tokens.
 
-Pre-v0.1.3, every site carried a `sync_token` column. The plugin's
-`.supa-page.json` stored it; every API call sent it as Bearer; the dashboard
-displayed it. The result was that customers committed tokens to git by
-accident every other week, and we spent an hour at a time rotating them.
+Pre-v0.1.3, every site carried a `sync_token` column. Customers committed
+those tokens to git by accident every other week, and we spent an hour at
+a time rotating them. v0.1.3 collapsed the per-site token model into a
+single Better Auth session bearer.
 
-The fix was structural: there's no token. Every CLI call reads the user's
-Better Auth session bearer from `~/.config/supa-page/session.json` and sends
-the site name in the request body. The server resolves "does this user own
-this site?" via org membership. `.supa-page.json` is now `{ "site", "server" }`
-and safe to commit.
+v0.2.0 took the next step: dropped the BA session bearer too. Auth is now
+OAuth 2.1 via the MCP server — one credential surface, audience-bound,
+refreshed automatically by Claude Code. There's nothing on disk anywhere.
 
 ## What got cut
 

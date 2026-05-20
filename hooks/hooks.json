@@ -1,18 +1,6 @@
 {
-  "description": "supa.page plugin hooks — auto-sync edits, load session context on start, guard against unsynced exits + secret leaks, lock concurrent publishes.",
+  "description": "supa.page plugin hooks — local-only secret scan before file writes. Auth + sync moved to the MCP server in v0.2.0.",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-start.sh",
-            "timeout": 8
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
@@ -20,30 +8,6 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/secret-scan.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/sync.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/stop-check.sh",
             "timeout": 5
           }
         ]

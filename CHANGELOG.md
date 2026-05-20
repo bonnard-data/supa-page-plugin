@@ -3,6 +3,83 @@
 All notable changes to the supa.page plugin. This project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-05-20
+
+### MCP-only — bash auth + bash skills + sync hook removed
+
+v0.1.x ran a parallel auth and tool surface — `/signin` device flow wrote
+`~/.config/supa-page/session.json`; 17 bash scripts under
+`plugin/scripts/` re-implemented what the platform-side MCP server
+already exposed. That made sense before MCP shipped. With v0.1.5 wiring
+the MCP into the plugin manifest, the bash duplicates became dead code.
+
+v0.2.0 deletes them:
+
+**Removed:**
+- `plugin/lib/api.sh` (~200 lines)
+- `plugin/scripts/*.sh` — all 17 action scripts (list, status, diff, new,
+  publish, visibility, rollback-fetch, rollback-act, domain-add,
+  domain-list, domain-remove, domain-recheck, signin-init, signin-poll,
+  signin-welcome, signout, preview)
+- `plugin/hooks/scripts/sync.sh` — PostToolUse auto-sync
+- `plugin/hooks/scripts/session-start.sh` — resume banner
+- `plugin/hooks/scripts/stop-check.sh` — unsynced-changes warning
+- `~/.config/supa-page/session.json` — the BA session token file is no
+  longer read by anything in the plugin. Safe to leave on disk; safer to
+  `rm` it.
+
+**Kept:**
+- `plugin/hooks/scripts/secret-scan.sh` (PreToolUse) — local-only,
+  doesn't depend on auth.
+
+**Converted:**
+- Every action skill in `plugin/skills/*/SKILL.md` is now a thin
+  markdown orchestrator that routes to the matching MCP tool via
+  `allowed-tools` frontmatter. ~10 lines instead of ~30.
+
+### Server-side: new `create_site` MCP tool
+
+The MCP server registered 13 tools in v0.1.3 but had no
+`create_site` — that path lived only in the legacy bash plugin. v0.2.0
+closes the gap. Site creation now goes through MCP like every other
+operation.
+
+### Auth: one model, OAuth 2.1
+
+Sign-in is now exclusively handled by Claude Code's MCP OAuth flow:
+
+1. Install plugin → Claude Code discovers `plugin/.mcp.json`
+2. First MCP tool call → 401 from `/mcp` → Claude Code does
+   RFC 7591 dynamic client registration + browser authorization_code
+   flow with PKCE
+3. Token cached in Claude Code's MCP state; refreshed automatically
+4. `/mcp` dialog → "Clear authentication" replaces `/signout`
+
+For users with multiple MCP clients (Cursor, Claude desktop, custom
+agents), each client does its own OAuth dance — there's no shared
+token across clients (by design — audience-bound per RFC 8707).
+
+### Breaking changes for v0.1.x users
+
+- **`/signin` device flow is gone.** The `/signin` skill remains but
+  now just points to the MCP dialog. Existing `~/.config/supa-page/`
+  files are ignored.
+- **Auto-sync on Edit/Write is gone.** Agents must explicitly call the
+  `sync_files` MCP tool to push file changes. The MCP tool batches
+  many files in one call — generally more efficient than the
+  per-edit hook anyway.
+- **`.supa-page.json` markers are no longer required.** The plugin no
+  longer walks up looking for them. Agents track "which site am I
+  working on?" from conversation context.
+- **`session-start` banner is gone.** The `/mcp` dialog shows auth
+  status.
+
+### Net diff
+
+- Plugin shrinks from ~900 lines of bash + 20 skills to ~80 lines of
+  markdown skills + the secret-scan hook.
+- One auth model. One tool surface. Same functionality.
+
 ## [0.1.5] — 2026-05-20
 
 ### MCP server — wired into the plugin manifest
