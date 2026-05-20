@@ -3,6 +3,46 @@
 All notable changes to the supa.page plugin. This project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] — 2026-05-20
+
+### Architecture refactor — commands → skills + scripts
+
+Every slash command moved from the legacy `commands/` layout to the
+docs-recommended `skills/<name>/SKILL.md` layout, with the real bash logic
+extracted to `scripts/<name>.sh`. The skill markdown is now a thin
+orchestrator that invokes the script via the `!`bash …`` prefix; the
+harness runs the script in actual `bash` (honouring the shebang) and
+substitutes its stdout into the prompt.
+
+This fixes a real portability bug that hit any macOS user with the default
+zsh shell: `lib/api.sh` was sourced from the agent's interactive shell, and
+its `local status` declaration collided with zsh's readonly `$status`
+special parameter, causing every command except `/signin`, `/signout`, and
+`/preview` to fail immediately.
+
+The new architecture moves the shell-of-record decision into the shebang
+on each script. Whatever shell the agent runs in (zsh, bash, anything),
+the script always runs in bash.
+
+**File layout changes:**
+
+```
+plugin/
+├── commands/             # DELETED
+├── lib/api.sh            # zsh-safe (renamed `local status` → `local http_status`)
+├── scripts/<cmd>.sh      # NEW — real logic, #!/usr/bin/env bash
+└── skills/<cmd>/SKILL.md # NEW — thin orchestrator
+```
+
+**No behaviour changes.** Every command behaves identically from the user's
+perspective. The same `/list`, `/new`, `/publish`, etc. still work; they
+just route through the new architecture.
+
+**Internal:** scripts emit user-facing messages on stdout, diagnostics on
+stderr. Exit code 64 is reserved for "needs input from the user" — the
+skill is expected to AskUserQuestion and re-invoke the script with the
+answer. Exit code 2 is reserved for "session expired, suggest /signin".
+
 ## [0.1.3] — 2026-05-20
 
 ### Marketplace

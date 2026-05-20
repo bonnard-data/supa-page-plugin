@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-# validate-command.sh — pre-flight check for command markdown files.
+# validate-skill.sh — pre-flight check for user-invoked SKILL.md files.
 #
 # Usage:
-#   bash validate-command.sh plugin/commands/*.md
-#   bash validate-command.sh  (defaults to plugin/commands/*.md from $PWD)
+#   bash validate-command.sh plugin/skills/*/SKILL.md
+#   bash validate-command.sh  (defaults to plugin/skills/*/SKILL.md from $PWD)
+#
+# v0.1.4: this script used to scan plugin/commands/*.md back when slash commands
+# lived in the legacy commands/ layout. Now everything is skills — but knowledge
+# skills use a different frontmatter shape (name + description + version) than
+# action skills (description + allowed-tools + model). This validator targets
+# only the action-skill frontmatter shape.
 #
 # Catches:
 #   - missing frontmatter
-#   - missing required fields (name, description)
+#   - missing required 'description'
 #   - invalid model value
 #   - invalid allowed-tools shape
 #   - description over /help-friendly length (warning)
@@ -15,8 +21,8 @@
 # Run from the supa-page repo root, or pass paths explicitly.
 #
 # Designed for both:
-#   - manual invocation while editing a command
-#   - pre-commit hook ($ for f in $(git diff --cached --name-only | grep 'plugin/commands/.*\.md$'); do bash plugin/scripts/validate-command.sh "$f"; done)
+#   - manual invocation while editing a skill
+#   - pre-commit hook ($ for f in $(git diff --cached --name-only | grep 'plugin/skills/.*/SKILL\.md$'); do bash plugin/scripts/validate-command.sh "$f"; done)
 set -uo pipefail
 
 VALID_MODELS="haiku sonnet opus inherit"
@@ -53,10 +59,8 @@ validate_one() {
     errs+=("missing or empty YAML frontmatter (no '---' delimiters at top)")
   fi
 
-  # name + description required
-  if ! echo "$fm" | grep -qE '^name:\s+\S'; then
-    errs+=("missing 'name:' in frontmatter")
-  fi
+  # description required. (name: was required in legacy commands/ frontmatter
+  # but action-skill SKILL.md takes its name from the parent directory.)
   if ! echo "$fm" | grep -qE '^description:\s+\S'; then
     errs+=("missing 'description:' in frontmatter")
   fi
@@ -111,12 +115,18 @@ main() {
   if [ "$#" -gt 0 ]; then
     for f in "$@"; do validate_one "$f"; done
   else
-    # Default: walk plugin/commands/*.md from current dir
-    if [ ! -d plugin/commands ]; then
+    # Default: walk plugin/skills/*/SKILL.md from current dir
+    if [ ! -d plugin/skills ]; then
       echo "Usage: $0 [files...]   (or run from supa-page repo root)" >&2
       exit 2
     fi
-    for f in plugin/commands/*.md; do validate_one "$f"; done
+    # Only validate action-skill SKILL.md (those with description + allowed-tools);
+    # knowledge skills use a different frontmatter shape and aren't covered here.
+    for f in plugin/skills/*/SKILL.md; do
+      if grep -qE '^allowed-tools:' "$f"; then
+        validate_one "$f"
+      fi
+    done
   fi
 
   echo

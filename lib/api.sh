@@ -208,13 +208,16 @@ supa::api() {
   # Portable mktemp invocation: `-t` differs between GNU and BSD. Use the
   # template-as-path form which both honour identically.
   tmp="$(mktemp "${TMPDIR:-/tmp}/supa-api.XXXXXX")"
-  local status
-  status="$(curl "${args[@]}" -o "$tmp" -w '%{http_code}' "$SUPA_SERVER$path" 2>/dev/null || echo '000')"
+  # `local status` would clobber zsh's readonly $status special parameter,
+  # so callers sourcing this from a zsh shell would die here. Avoid any name
+  # in zsh's reserved set (status, ARGV, LINENO, HISTNO, SECONDS, etc.).
+  local http_status
+  http_status="$(curl "${args[@]}" -o "$tmp" -w '%{http_code}' "$SUPA_SERVER$path" 2>/dev/null || echo '000')"
   local resp
   resp="$(cat "$tmp" 2>/dev/null || echo '')"
   rm -f "$tmp"
-  printf '%s\n%s\n' "$status" "$resp"
-  case "$status" in
+  printf '%s\n%s\n' "$http_status" "$resp"
+  case "$http_status" in
     2*) return 0 ;;
     401) return 2 ;;
     *) return 1 ;;

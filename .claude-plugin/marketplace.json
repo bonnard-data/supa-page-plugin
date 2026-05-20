@@ -10,7 +10,7 @@
       "name": "supa-page-plugin",
       "source": "./",
       "description": "Build and deploy marketing sites on supa.page from Claude Code — custom domains, staging/prod publishing, per-site auto-sync, MCP server.",
-      "version": "0.1.3"
+      "version": "0.1.4"
     }
   ]
 }
