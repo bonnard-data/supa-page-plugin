@@ -1,21 +1,43 @@
 ---
 name: preview
-description: Open the staging preview URL for the current site in the default browser
+description: Open the preview URL for the current site (renders from source/)
+allowed-tools: Bash
+model: haiku
 ---
 
-The user wants to preview the current supa.page site's staging state in a browser.
+<!--
+USAGE:    /preview
+EFFECT:   Read-only. Constructs the preview URL and opens it in the default browser.
+-->
+
+The user wants to preview the current supa.page site's staged content.
 
 ## What to do
 
-1. Find the nearest `.supa-page.json`. If none, tell the user and stop.
-2. Read `site` and `server` from `.supa-page.json`.
-3. Construct the preview URL: `<server>/?preview=<site>`
-4. Print the URL and try to open it in the default browser:
-   - macOS: `open "<url>"`
-   - Linux: `xdg-open "<url>"`
-   - Windows: `start "<url>"`
-5. Tell the user the URL regardless, in case the browser open fails.
+1. **Source the shared helper:**
+
+   ```bash
+   source "${CLAUDE_PLUGIN_ROOT}/lib/api.sh"
+   supa::find_site_config || exit 1
+   ```
+
+   (No `/signin` required — the preview URL is open within the platform's visibility rules.)
+
+2. **Build the URL:** `${SUPA_SERVER}/?preview=${SUPA_SITE}`.
+
+3. **Open the browser:**
+
+   ```bash
+   case "$(uname)" in
+     Darwin) open "$URL" ;;
+     Linux)  xdg-open "$URL" ;;
+     *)      start "$URL" 2>/dev/null || true ;;
+   esac
+   ```
+
+4. **Always print the URL** in case the browser launch fails.
 
 ## Notes
 
-- This URL renders from `source/` (what's currently staged). Production URL `<server>/?site=<name>` shows the last published snapshot.
+- Preview renders from `source/` (your staged edits). The production URL `https://<site>.supa.page` shows the latest published snapshot.
+- If the site has `visibility=private`, production requires an org-member session. Preview never does — it's gated only by knowing the URL.

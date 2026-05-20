@@ -1,7 +1,17 @@
 ---
 name: signin
-description: Sign in to supa.page (browser flow — supports email code, GitHub, or Google)
+description: Sign in to supa.page from this machine (browser device-flow)
+allowed-tools: Bash, Write
+model: sonnet
 ---
+
+<!--
+USAGE:    /signin
+EFFECT:   OAuth 2.0 Device Authorization Grant (RFC 8628). Writes
+          ~/.config/supa-page/session.json with {server, session_token}.
+NOTE:     v0.1.3 — this token is now the only credential needed for every
+          plugin command. Per-site sync tokens are gone.
+-->
 
 The user wants to sign in to their supa.page account.
 
@@ -109,7 +119,12 @@ available.
    Response: `{ok: true, org: {id, name, slug}}`. The slug is the URL handle
    (so `bigfoot` becomes `<server>/orgs/bigfoot`).
 
-7. **Print success:**
+7. **Audit + print success:**
+
+   ```bash
+   source "${CLAUDE_PLUGIN_ROOT}/lib/api.sh"
+   supa::audit_log signin server="<server>" email="<email>"
+   ```
 
    ```
    ✓ Signed in as <email>

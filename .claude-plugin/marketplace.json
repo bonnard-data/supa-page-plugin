@@ -1,15 +1,16 @@
 {
-  "name": "bonnard-data",
+  "name": "supa-page",
   "owner": {
-    "name": "Bonnard Data",
-    "email": "max@bonnard.ai"
+    "name": "supa.page",
+    "email": "max@bonnard.ai",
+    "url": "https://supa.page"
   },
   "plugins": [
     {
       "name": "supa-page-plugin",
       "source": "./",
-      "description": "Build and deploy marketing sites on supa.page from Claude Code.",
-      "version": "0.1.2"
+      "description": "Build and deploy marketing sites on supa.page from Claude Code — custom domains, staging/prod publishing, per-site auto-sync, MCP server.",
+      "version": "0.1.3"
     }
   ]
 }

@@ -1,45 +1,52 @@
 ---
 name: domain-list
-description: List custom domains for the current site with status
+description: List custom domains for the current site with DNS + cert status
+allowed-tools: Bash
+model: haiku
 ---
 
-The user wants to see all custom domains registered for this site, along with
-their DNS-verification + cert status.
+<!--
+USAGE:    /domain-list
+REQUIRES: /signin first; cwd inside a supa.page site directory
+EFFECT:   Read-only. GET /api/domains?site=<name>.
+-->
+
+The user wants to see custom domains registered for this site.
 
 ## What to do
 
-1. Find the nearest `.supa-page.json` by walking up from cwd. If none, tell the user and stop.
-2. Read `server` and `token` from `.supa-page.json`.
-3. GET `<server>/api/domains` with Bearer auth:
+1. **Source the shared helper:**
 
    ```bash
-   curl -sS "<server>/api/domains" -H "Authorization: Bearer <token>"
+   source "${CLAUDE_PLUGIN_ROOT}/lib/api.sh"
+   supa::ensure_deps      || exit 1
+   supa::find_site_config || exit 1
+   supa::ensure_signed_in || {
+     echo "Run /signin first." >&2
+     exit 2
+   }
    ```
 
-4. Response shape:
+2. **GET `/api/domains?site=<site>`:**
+
+   ```bash
+   RESP="$(supa::api GET "/api/domains?site=$SUPA_SITE")"
+   STATUS="$(echo "$RESP" | head -1)"
+   PAYLOAD="$(echo "$RESP" | tail -n +2)"
+   ```
+
+3. **Render the rows.** Response shape:
 
    ```json
    {
      "domains": [
-       {
-         "domain": "example.com",
-         "status": "active",
-         "last_checked_at": 1779190000000,
-         "last_error": null,
-         "password_protected": false
-       },
-       {
-         "domain": "www.example.com",
-         "status": "pending_dns",
-         "last_checked_at": 1779190000000,
-         "last_error": "Domain does not resolve. DNS may still be propagating.",
-         "password_protected": false
-       }
+       { "domain": "example.com", "status": "active",      "last_checked_at": ..., "last_error": null, "password_protected": false },
+       { "domain": "www.example.com", "status": "pending_dns", "last_checked_at": ..., "last_error": "...", "password_protected": false }
      ]
    }
    ```
 
-5. Print one row per domain with a status indicator. Suggested format:
+   Render:
 
    ```
    ✓ example.com         (active)
@@ -52,18 +59,17 @@ their DNS-verification + cert status.
 
    Status → indicator:
    - `active` → `✓`
-   - `dns_verified` / `issuing_cert` → `⏳` (in progress)
+   - `dns_verified` / `issuing_cert` → `⏳`
    - `pending_dns` → `⏳`
    - `error_dns` / `error_cert` → `⚠`
    - `disabled` → `–`
 
    Prefix with `🔒` if `password_protected: true`.
 
-6. If the list is empty:
+4. **If empty:**
 
    ```
    No custom domains registered. Use /domain-add to add one.
    ```
 
-7. After printing, suggest `/domain-recheck <domain>` for any non-active domains
-   to force a DNS re-check.
+5. After printing, suggest `/domain-recheck <domain>` for any non-active domains to force a DNS re-check.

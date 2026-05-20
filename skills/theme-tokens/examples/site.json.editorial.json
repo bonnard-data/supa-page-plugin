@@ -1,0 +1,16 @@
+{
+  "title": "Notebook",
+  "description": "Long-form writing on tools, code, and small companies.",
+  "theme": "editorial",
+  "header": {
+    "logo": "Notebook",
+    "links": [
+      { "label": "Archive", "href": "/posts" },
+      { "label": "About", "href": "/about" },
+      { "label": "Subscribe", "href": "/subscribe", "variant": "button" }
+    ]
+  },
+  "footer": {
+    "text": "Notebook — by Max"
+  }
+}

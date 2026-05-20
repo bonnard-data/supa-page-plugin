@@ -1,37 +1,62 @@
 ---
 name: list
-description: Show the supa.page sites owned by the currently signed-in user
+description: List the supa.page sites the signed-in user owns
+allowed-tools: Bash
+model: haiku
 ---
+
+<!--
+USAGE:    /list
+REQUIRES: /signin first
+EFFECT:   Read-only. GET /api/me; renders the sites array.
+-->
 
 The user wants a list of their supa.page sites.
 
 ## What to do
 
-1. **Read the session file:** `${XDG_CONFIG_HOME:-$HOME/.config}/supa-page/session.json`. If missing or malformed, tell the user to run `/site-signin` first.
+1. **Source the shared helper:**
 
-2. **Read `server` and `session_token`.**
-
-3. **Fetch the profile:**
-
+   ```bash
+   source "${CLAUDE_PLUGIN_ROOT}/lib/api.sh"
+   supa::ensure_deps   || exit 1
+   supa::ensure_signed_in || {
+     echo "Not signed in. Run /signin to authorize this machine." >&2
+     exit 2
+   }
    ```
-   curl -sS "<server>/api/me" -H "Authorization: Bearer <session_token>"
+
+   (No site config needed — this is a global view.)
+
+2. **Fetch the profile** at `GET /api/me`:
+
+   ```bash
+   RESP="$(supa::api GET /api/me)"
+   STATUS="$(echo "$RESP" | head -1)"
+   PAYLOAD="$(echo "$RESP" | tail -n +2)"
    ```
 
-   On 401, tell the user the session has expired and to run `/site-signin` again.
+3. **Render the table.** v0.1.3 response shape:
 
-4. **Print a compact table:**
+   ```json
+   {
+     "user": { "id", "email", "created_at", "welcomed_at" },
+     "org_id": "...",
+     "sites": [{ "name", "visibility", "created_at" }]
+   }
+   ```
+
+   Note: `sync_token` is no longer returned (the field is gone from the DB as of v0.1.3). Auth happens via the BA session.
 
    ```
    Signed in as <user.email>
 
-   <name>                    <prod-URL>
-   <name>                    <prod-URL>
+   <name>          (<visibility>)    https://<name>.supa.page
+   <name>          (<visibility>)    https://<name>.supa.page
    ```
 
-   Where `<prod-URL>` is `<server>/?site=<name>` for the local dev server or `https://<name>.supa.page` for production (derive from `server`).
+   Show `<visibility>` from the row (`public` or `private`).
 
-5. **If there are zero sites:** print `No sites yet. Run /site-new to create your first.`
+4. **If `sites` is empty:** print `No sites yet. Run /new <name> to create your first.`
 
-## Notes
-
-- The `sync_token` for each site is returned by `/api/me` but should not be printed — it's a secret. Echo only the site names.
+5. **On 401**: session expired — tell the user to re-run `/signin`.

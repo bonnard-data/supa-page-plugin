@@ -1,0 +1,14 @@
+{
+  "title": "Blog",
+  "sections": [
+    {
+      "type": "post-feed",
+      "title": "Engineering posts",
+      "tag": "engineering",
+      "sort": "newest",
+      "limit": 10,
+      "show_excerpt": true,
+      "featured": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "title": "FAQ",
+  "sections": [
+    {
+      "type": "faq",
+      "title": "Frequently asked questions",
+      "description": "Can't find what you need? Email hello@supa.page.",
+      "behavior": "single",
+      "items": [
+        {
+          "question": "Can I use my own domain?",
+          "answer": "Yes — `/domain-add example.com` registers it and prints the DNS records to add. HTTPS issues automatically once DNS propagates."
+        },
+        {
+          "question": "Where are my sites hosted?",
+          "answer": "On a single Hetzner ARM VPS in Falkenstein. Backups go to Cloudflare R2. We'll add multi-region when uptime needs justify the cost."
+        },
+        {
+          "question": "What's the limit on the free plan?",
+          "answer": "One site. Pro is $19/mo for up to 10 sites + analytics."
+        }
+      ]
+    }
+  ]
+}

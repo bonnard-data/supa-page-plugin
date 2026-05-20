@@ -1,0 +1,19 @@
+{
+  "title": "Nova",
+  "description": "AI scheduling that fits the way your team already works.",
+  "theme": "default",
+  "theme_overrides": {
+    "--accent": "oklch(0.55 0.25 280)",
+    "--accent-fg": "#ffffff",
+    "--radius": "0.75rem",
+    "--width-prose": "34rem"
+  },
+  "header": {
+    "logo": "Nova",
+    "links": [
+      { "label": "Product", "href": "/product" },
+      { "label": "Pricing", "href": "/pricing" },
+      { "label": "Start free", "href": "/signup", "variant": "button" }
+    ]
+  }
+}

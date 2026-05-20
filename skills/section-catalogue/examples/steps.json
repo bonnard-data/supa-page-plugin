@@ -1,0 +1,25 @@
+{
+  "title": "How it works",
+  "sections": [
+    {
+      "type": "steps",
+      "eyebrow": "From zero to live",
+      "title": "Three commands to publish",
+      "description": "Every command runs in Claude Code. No browser canvas, no chat UI.",
+      "items": [
+        {
+          "title": "Sign in",
+          "description": "Run /signin once per machine. Authorize in the browser; the CLI captures the token."
+        },
+        {
+          "title": "Create the site",
+          "description": "/new my-landing-page scaffolds source/ and reserves my-landing-page.supa.page."
+        },
+        {
+          "title": "Edit + publish",
+          "description": "Edit JSON / Markdown with Claude. /publish snapshots source/ and flips production."
+        }
+      ]
+    }
+  ]
+}

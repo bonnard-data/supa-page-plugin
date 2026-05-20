@@ -1,0 +1,20 @@
+{
+  "title": "My site",
+  "description": "Site description used in <meta>, OG cards, and the sitemap.",
+  "theme": "default",
+  "header": {
+    "logo": "My site",
+    "links": [
+      { "label": "Pricing", "href": "/pricing" },
+      { "label": "Docs", "href": "/docs" },
+      { "label": "Sign in", "href": "/signin", "variant": "button" }
+    ]
+  },
+  "footer": {
+    "text": "© 2026 My site. All rights reserved.",
+    "links": [
+      { "label": "Privacy", "href": "/privacy" },
+      { "label": "Terms", "href": "/terms" }
+    ]
+  }
+}

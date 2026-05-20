@@ -1,38 +1,76 @@
 ---
 name: publish
-description: Publish the current staging state to production (snapshots source/ and flips the live symlink)
+description: Publish staging to production (snapshots + flips current.json)
+argument-hint: [message]
+allowed-tools: Bash
+model: sonnet
 ---
+
+<!--
+USAGE:    /publish "ship landing page v2"
+REQUIRES: /signin first; cwd inside a supa.page site directory
+EFFECT:   Snapshots source/ → publishes/<id>/source/, flips current.json
+NOTE:     Visibility is a separate concern. New sites are private by default —
+          run /visibility public to make production publicly viewable.
+-->
 
 The user wants to publish the current supa.page site's staging state to production.
 
 ## What to do
 
-1. Find the nearest `.supa-page.json` by walking up from the cwd. If none, tell the user "Not in a supa.page site directory." and stop.
-2. Read `server` and `token` from `.supa-page.json`.
-3. Use `$ARGUMENTS` as the publish message. If empty, ask the user for one (short, like a commit message). Skip the prompt if `$ARGUMENTS` looks intentional (even one word is fine).
-4. POST to `<server>/api/publish` with Bearer auth:
+1. **Source the shared helper + acquire the publish lock:**
 
-   ```
-   curl -sS -X POST "<server>/api/publish" \
-     -H "Authorization: Bearer <token>" \
-     -H "Content-Type: application/json" \
-     -d "$(jq -cn --arg m "<message>" '{message: $m}')"
+   ```bash
+   source "${CLAUDE_PLUGIN_ROOT}/lib/api.sh"
+   supa::ensure_deps   || exit 1
+   supa::find_site_config || exit 1
+   supa::ensure_signed_in || {
+     echo "Run /signin first, then /publish again." >&2
+     exit 2
+   }
+   supa::acquire_lock /publish || exit 1
+   trap 'supa::release_lock' EXIT
    ```
 
-5. On 200, response is `{snapshot, timestamp, message}`. Print:
+   The lockfile (`.claude/supa-page-plugin.local.lock`) prevents accidentally racing yourself from two terminals. Server-side, the per-site mutex in `snapshots.ts` is the authoritative concurrency guard.
+
+2. **Get the publish message.** Use `$ARGUMENTS` if non-empty. Otherwise ask the user (short, like a commit message). Skip the prompt if `$ARGUMENTS` looks intentional.
+
+3. **POST to /api/publish** with `{site, message}`:
+
+   ```bash
+   BODY="$(jq -cn --arg s "$SUPA_SITE" --arg m "<message>" '{site: $s, message: $m}')"
+   RESP="$(supa::api POST /api/publish "$BODY")"
+   STATUS="$(echo "$RESP" | head -1)"
+   PAYLOAD="$(echo "$RESP" | tail -n +2)"
+   ```
+
+4. **On 200**, response is `{snapshot, timestamp, message}`. Audit + print:
+
+   ```bash
+   SNAP="$(echo "$PAYLOAD" | jq -r .snapshot)"
+   supa::audit_log publish site="$SUPA_SITE" snapshot="$SNAP" message="<message>" status=200
+   ```
+
    ```
    ✓ Published — <message>
      snapshot: <snapshot>
-     prod URL: <server>/?site=<name>
-
-   Note: new sites are private by default. Visit
-   <dashboard>/orgs/<your-org>/sites/<name> and toggle "Public staging"
-   to let visitors view <name>.supa.page without signing in.
+     preview:  <server>/?preview=<site>
+     live:     <site>.supa.page   (if visibility=public)
    ```
-   (Where `<dashboard>` is `app.<apex>` — e.g. `https://app.supa.page`.)
-6. On error, surface the response and stop.
+
+5. **On 401**, tell the user their session expired; suggest `/signin`. On other errors, surface the response, audit, and stop:
+
+   ```bash
+   supa::audit_log publish site="$SUPA_SITE" status="$STATUS" outcome=failed
+   ```
 
 ## Notes
 
-- Publish snapshots whatever is currently in `source/` on the server. If your latest edits haven't synced yet (sync hook didn't fire, server down), they won't be in the snapshot. Confirm with `/diff` first if unsure.
-- **Staging visibility**: new sites have `staging_public = 0`, meaning `<name>.supa.page` redirects non-members to sign in. Toggle it from the dashboard — there's no plugin command for this yet. (Use `?preview=<name>` on the apex to view the latest published state without the gate, e.g. `https://supa.page/?preview=acme`.)
+- `/publish` snapshots whatever is currently in `source/` on the server. If your latest edits haven't synced yet (sync hook didn't fire, server down), they won't be in the snapshot. Confirm with `/diff` first if unsure.
+- **Production visibility is separate.** New sites have `visibility = 'private'`, so `<name>.supa.page` requires an org-member session. Toggle with `/visibility public`. (Use `?preview=<name>` on the apex to view the latest published state without the gate.)
+- v0.1.3 changed the auth model: the plugin no longer carries a per-site token. Every command reads the BA session bearer from `~/.config/supa-page/session.json` and sends `site` in the request body.
+
+## Namespace clashes
+
+If `/publish` collides with another plugin, use `/plugin:supa-page-plugin:publish`.
