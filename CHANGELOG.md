@@ -3,6 +3,50 @@
 All notable changes to the supa.page plugin. This project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] — 2026-05-20
+
+### MCP server — wired into the plugin manifest
+
+The supa.page server has shipped a Streamable HTTP MCP endpoint at
+`https://supa.page/mcp` since v0.1.3 (server commit `50eb69b`), but the
+plugin never advertised it to Claude Code. Users who installed the plugin
+got skills only; the MCP tools were reachable only via a manual
+`/mcp add` against the URL.
+
+This release adds `plugin/.mcp.json` (the docs-recommended Method 1)
+so installing the plugin auto-registers the remote MCP and Claude Code
+discovers the 13 tools automatically:
+
+```
+mcp__plugin_supa-page-plugin_supa-page__whoami
+mcp__plugin_supa-page-plugin_supa-page__list_sites
+mcp__plugin_supa-page-plugin_supa-page__get_site
+mcp__plugin_supa-page-plugin_supa-page__list_publishes
+mcp__plugin_supa-page-plugin_supa-page__diff_site
+mcp__plugin_supa-page-plugin_supa-page__sync_files
+mcp__plugin_supa-page-plugin_supa-page__publish_site
+mcp__plugin_supa-page-plugin_supa-page__rollback_site
+mcp__plugin_supa-page-plugin_supa-page__set_visibility
+mcp__plugin_supa-page-plugin_supa-page__list_domains
+mcp__plugin_supa-page-plugin_supa-page__add_domain
+mcp__plugin_supa-page-plugin_supa-page__remove_domain
+mcp__plugin_supa-page-plugin_supa-page__recheck_domain
+```
+
+**Auth:** OAuth 2.1 with dynamic client registration (RFC 7591), PKCE
+(S256), and audience-bound access tokens (RFC 8707). Claude Code handles
+the entire flow automatically — first MCP tool call triggers a browser
+authorization step against `https://app.supa.page`, with consent scoped
+to `mcp:read`, `mcp:sites:write`, `mcp:posts:write`, `offline_access`.
+
+**Skills + MCP coexist.** The skills (`/new`, `/publish`, etc.) remain
+unchanged — they're still the right interface when you want kebab-case
+slash commands from the CLI. The MCP tools are what subagents and
+external MCP clients (Cursor, Claude desktop) bind to.
+
+**No breaking changes.** Plugin description and keywords already
+mentioned MCP; this release makes the claim accurate.
+
 ## [0.1.4] — 2026-05-20
 
 ### Architecture refactor — commands → skills + scripts
