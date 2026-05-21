@@ -1,0 +1,25 @@
+{
+  "title": "How it works",
+  "sections": [
+    {
+      "type": "steps",
+      "eyebrow": "From zero to live",
+      "title": "Three commands to publish",
+      "description": "Every command runs in Claude Code. No browser canvas, no chat UI.",
+      "items": [
+        {
+          "title": "Sign in",
+          "description": "Run /mcp once per machine. Authorize in the browser; Claude Code captures the OAuth token."
+        },
+        {
+          "title": "Create the site",
+          "description": "/new my-landing-page seeds an initial page + reserves my-landing-page.supa.page."
+        },
+        {
+          "title": "Edit + publish",
+          "description": "Edit via /edit-page, /edit-post, /update-theme. /publish promotes drafts to main; the live URL updates immediately."
+        }
+      ]
+    }
+  ]
+}

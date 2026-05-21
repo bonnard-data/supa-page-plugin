@@ -9,14 +9,14 @@ The user wants to change a site's theme, theme_overrides, header, or footer.
 
 Resolve the site name (from `$ARGUMENTS`, conversation context, or `list_sites` + AskUserQuestion).
 
-There's no read tool for `site_config` in v0.5 — ask the user what they want to change. Useful prompts:
+There's no read tool for `site_config` in v0.4.0 — ask the user what they want to change. Useful prompts:
 
 - "Which preset? `default` or `editorial` (theme-tokens skill compares them)."
-- "Brand colour (CSS value for `--accent`)?"
+- "Brand color (CSS value for `--accent`)?"
 - "Header logo + links?"
 - "Footer text + links?"
 
-Build a `site_config` patch object — only include fields you want to change. Shape:
+Build a `site_config` patch object — only include the fields you want to change. Shape:
 
 ```
 {
@@ -29,12 +29,10 @@ Build a `site_config` patch object — only include fields you want to change. S
 }
 ```
 
-Call `update_site_config({site, config})`. The response includes `previewUrl` and `liveUrl`.
+**Pre-validate theme_overrides if you're touching them.** Run `node ${CLAUDE_PLUGIN_ROOT}/skills/theme-tokens/scripts/validate-theme-overrides.js` on the proposed object to catch unknown tokens (silently dropped at render time) and unsafe values.
 
-**Surface the preview URL.** Tell the user:
+Call `update_site_config({site, patch})`. The patch is merge-semantics on the top-level fields — pass only what you want to change.
 
-> Site config saved to drafts (v{version}). Preview: {previewUrl} — auto-reloads via SSE; refresh the open preview tab to see the new theme. Live (public): {liveUrl} updates on `/publish`.
+Surface the result + remind the user: changes land in **drafts**. Run `/diff` to confirm, `/publish` to go live.
 
-Theme changes propagate to every page on the site (it's a site-wide token change, not a per-page edit). Mention this if the user expected per-page scope.
-
-For the token reference (which 8 tokens are overridable, why others aren't), the `theme-tokens` knowledge skill is authoritative.
+For the 8 overridable theme tokens, the two presets, and the customization ladder, the `theme-tokens` knowledge skill is the authoritative reference.

@@ -1,0 +1,16 @@
+{
+  "title": "Example landing page",
+  "description": "Used as <meta name=\"description\"> on the rendered HTML.",
+  "sections": [
+    {
+      "type": "hero",
+      "eyebrow": "Beta — v0.1.3",
+      "badge": { "label": "We raised our Series A →", "href": "/news/series-a" },
+      "title": "Ship marketing sites from your terminal.",
+      "description": "Edit pages in JSON, sync via Claude Code, publish in one command. Custom domains, blog, analytics.",
+      "align": "center",
+      "cta": { "label": "Start free", "href": "/signup" },
+      "cta_secondary": { "label": "Read the docs", "href": "/docs" }
+    }
+  ]
+}

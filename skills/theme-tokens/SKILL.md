@@ -108,8 +108,8 @@ Theme tokens are step **#2** in the customization ladder:
 1. Edit a section's props (per-instance change — `upsert_page`).
 2. **Edit `theme_overrides` via `update_site_config`** (site-wide token change — this skill).
 3. Edit `header`/`footer` via `update_site_config` (site-wide chrome).
-
-If a customer asks for something beyond these three levels (e.g. "make every section have a custom radial-gradient background"), the answer in v0.5 is "we don't support that yet — propose a new preset upstream or simplify the brief." Custom block types are not user-authorable in this release.
+4. Add a `raw-embed` section (one-off HTML+CSS, shadow-DOM scoped — see `custom-components` skill).
+5. Author a custom Lit component (rare — see `custom-components` skill).
 
 If a customer asks "make all buttons rounder", that's `--radius`. When in doubt, go higher in the ladder.
 

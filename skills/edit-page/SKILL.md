@@ -1,7 +1,7 @@
 ---
 description: Edit a page (sections, title, description, og_image) — lands in drafts
 argument-hint: [site] [slug]
-allowed-tools: mcp__plugin_supa-page-plugin_supa-page__get_page, mcp__plugin_supa-page-plugin_supa-page__upsert_page, mcp__plugin_supa-page-plugin_supa-page__validate_block, mcp__plugin_supa-page-plugin_supa-page__list_blocks, mcp__plugin_supa-page-plugin_supa-page__get_block, mcp__plugin_supa-page-plugin_supa-page__list_pages, mcp__plugin_supa-page-plugin_supa-page__list_sites, AskUserQuestion
+allowed-tools: mcp__plugin_supa-page-plugin_supa-page__get_page, mcp__plugin_supa-page-plugin_supa-page__upsert_page, mcp__plugin_supa-page-plugin_supa-page__list_pages, mcp__plugin_supa-page-plugin_supa-page__list_sites, AskUserQuestion
 model: sonnet
 ---
 
@@ -13,18 +13,11 @@ Resolve the slug (second token of `$ARGUMENTS`, or — when absent — call `lis
 
 **Read-modify-write pattern:**
 
-1. Call `get_page({site, slug})` to fetch the current page object. Response shape: `{slug, title, description?, sections: Section[], og_image?}`. For a new slug the tool returns 404 — start from `{slug, title: "...", sections: []}`.
+1. Call `get_page({site, slug})` to fetch the current page object. Response shape: `{ slug, title, description?, sections: Section[], og_image? }`. (For a new slug the tool returns 404 — start from `{ slug, title: "...", sections: [] }`.)
+2. Apply the user's intent — change a section's copy, add/remove sections, swap order, set the title.
+3. **Pre-validate.** Run `node ${CLAUDE_PLUGIN_ROOT}/skills/section-catalogue/scripts/validate-section.js` against the proposed object to catch malformed sections before the upsert.
+4. Call `upsert_page({site, slug, page})` with the full new page object. The whole object replaces the existing draft row — there is no field-level patch API.
 
-2. Apply the user's intent — change a section's copy, add/remove sections, swap order, set the title. For unknown block types, consult MCP discovery: `list_blocks` for the catalogue, `get_block({type})` for one block's schema + examples. See the `section-catalogue` knowledge skill for composition guidance.
+Surface the result + remind the user: edits land in **drafts**. Run `/diff` to see what's staged, `/publish` to promote drafts to main (live URL updates immediately), `/discard-changes` to throw the draft away.
 
-3. **Pre-validate every section.** For each section in the proposed page, call `mcp__plugin_supa-page-plugin_supa-page__validate_block({type, data})`. Each call returns `{ok, errors: [{path, expected, got, hint}]}`. Fix every error before upsert — block schemas are `.strict()` and the server-side `upsert_page` re-validates and rejects the whole call atomically on failure.
-
-4. Call `upsert_page({site, slug, page})` with the full new page object. The whole object replaces the existing draft row — there is no field-level patch API. The response includes `previewUrl` and `liveUrl`.
-
-5. **Surface the preview URL.** Tell the user:
-
-   > Edits saved to drafts (v{version}). Preview: {previewUrl} — opens immediately; the tab auto-reloads via SSE on every further edit. Live (public): {liveUrl} updates on `/publish`.
-
-   The preview URL is the killer iteration loop — encourage the user to open it before further edits so they can see changes in real time.
-
-After the upsert, summarise what changed and offer the next moves: `/diff` to see what's staged across the site, `/publish` to promote to main (live URL updates immediately), `/discard-changes` to throw the draft away.
+For page composition guidance (section catalogue, recipes), the `section-catalogue` knowledge skill is the authoritative reference.

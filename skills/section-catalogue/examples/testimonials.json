@@ -1,0 +1,37 @@
+{
+  "title": "Loved by indie hackers",
+  "sections": [
+    {
+      "type": "testimonials",
+      "title": "Customers shipping with supa.page",
+      "description": "Real teams, real sites. Click any quote to read the full case study.",
+      "layout": "grid",
+      "items": [
+        {
+          "quote": "Replaced our entire static-site pipeline.",
+          "author": "Alex Kim",
+          "role": "CTO",
+          "company": "Initech",
+          "avatar": "https://example.com/alex.jpg",
+          "rating": 5,
+          "href": "/case-studies/initech"
+        },
+        {
+          "quote": "First marketing tool I haven't fought with all year.",
+          "author": "Priya Patel",
+          "role": "Founder",
+          "company": "Nova",
+          "logo": "https://example.com/nova.svg",
+          "rating": 5
+        },
+        {
+          "quote": "Custom domain + HTTPS in 3 minutes.",
+          "author": "Sam Lee",
+          "role": "PM",
+          "company": "Mesh",
+          "avatar": "https://example.com/sam.jpg"
+        }
+      ]
+    }
+  ]
+}

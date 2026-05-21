@@ -1,7 +1,7 @@
 {
   "name": "supa-page-plugin",
-  "version": "0.5.0",
-  "description": "Build and deploy marketing sites on supa.page from Claude Code — MCP-first: 24 tools for typed CRUD on pages + posts + site_config, runtime block discovery (list_blocks + get_block + validate_block), drafts/main publish model with live preview SSE, OAuth 2.1 auth.",
+  "version": "0.4.0",
+  "description": "Build and deploy marketing sites on supa.page from Claude Code — MCP-first: 23 tools for typed CRUD on pages + posts + site_config, drafts/main publish model, OAuth 2.1 auth, all sites under one bearer.",
   "author": {
     "name": "Max Mealing",
     "email": "max@bonnard.ai",
@@ -14,8 +14,7 @@
     "publishing",
     "bun",
     "hono",
-    "ssr",
-    "frameworkless",
+    "lit",
     "cdn",
     "supa-page",
     "mcp"

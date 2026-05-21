@@ -1,0 +1,30 @@
+{
+  "title": "Features",
+  "sections": [
+    {
+      "type": "feature-grid",
+      "eyebrow": "What you get",
+      "title": "Everything you need to ship",
+      "description": "Short supporting line below the heading. Drop it if the eyebrow + title cover it.",
+      "columns": 3,
+      "items": [
+        {
+          "title": "Edit in your terminal",
+          "description": "Drive everything from Claude Code — JSON for structure, Markdown for prose.",
+          "icon": "💻",
+          "cta": { "label": "Read the agent guide", "href": "/docs/agent" }
+        },
+        {
+          "title": "Custom domains",
+          "description": "Auto-issued HTTPS via Caddy on-demand TLS. Apex + subdomain support.",
+          "icon": "🌐"
+        },
+        {
+          "title": "Blog + RSS + sitemap",
+          "description": "Markdown posts, draft gate, OG cards, RSS feed, robots.txt — all free.",
+          "icon": "📝"
+        }
+      ]
+    }
+  ]
+}
