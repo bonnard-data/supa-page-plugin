@@ -13,13 +13,18 @@ Resolve the slug (second token of `$ARGUMENTS`, or — when absent — call `lis
 
 **Read-modify-write pattern:**
 
-1. Call `get_post({site, slug})` to fetch the current post. Response shape: `{ slug, title, date?, published, excerpt?, tags?, featured?, og_image?, body }`. (404 for a new slug — start from a fresh object with `published: false`.)
+1. Call `get_post({site, slug})` to fetch the current post. Response shape: `{slug, title, date?, published, excerpt?, tags?, featured?, og_image?, body}`. 404 for a new slug — start from a fresh object with `published: false`.
+
 2. Apply the user's intent — rewrite body Markdown, change title, flip tags, etc.
+
 3. **Pre-validate.** Run `node ${CLAUDE_PLUGIN_ROOT}/skills/posts-and-blog/scripts/validate-frontmatter.js` against the typed post object before the upsert.
-4. Call `upsert_post({site, slug, post})` with the full new post.
 
-**Draft state:** `published: false` is the default. A post with `published: false` is invisible on production even after `/publish` — it renders only via `?preview=1`. Flip `published: true` when ready.
+4. Call `upsert_post({site, slug, post})` with the full new post. The response includes `previewUrl` and `liveUrl`.
 
-Surface the result + remind the user: edits land in **drafts** (separate from the per-post `published` flag — both gates have to be passed to be live). Run `/diff` to see staged drafts, `/publish` to promote them to main.
+5. **Surface the preview URL.** Tell the user:
+
+   > Post saved to drafts (v{version}). Preview: {previewUrl}/posts/{slug} — auto-reloads via SSE on every further edit. Live: {liveUrl}/posts/{slug} updates on `/publish`.
+
+**Draft state vs publish state:** `published: false` is the default. A post with `published: false` is invisible on production even after `/publish` — it renders only via `?preview=1`. Both gates have to pass (`published: true` AND a successful `/publish`) for the post to be live. Flip `published: true` when ready, then `/publish`.
 
 For frontmatter conventions and Markdown gotchas, the `posts-and-blog` knowledge skill is the authoritative reference.
