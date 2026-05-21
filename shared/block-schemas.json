@@ -1,0 +1,2567 @@
+{
+  "$generatedAt": "2026-05-21T15:12:35.135Z",
+  "$blockCount": 24,
+  "blocks": {
+    "cta": {
+      "type": "cta",
+      "title": "Call to action",
+      "summary": "Centered headline + description with up to two action buttons. High-emphasis section.",
+      "whenToUse": "Use as a closing section on landing pages, or mid-page when the goal is to drive a single decision. Prefer the hero block for the top-of-page hook.",
+      "defaults": {
+        "width": "wide",
+        "background": "accent"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "cta_secondary": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "Ready to ship faster?",
+          "description": "Get a marketing site live in minutes — no code, no templates to fight.",
+          "cta": {
+            "label": "Start free",
+            "href": "/signup"
+          }
+        },
+        {
+          "eyebrow": "Final call",
+          "title": "Last chance to lock in launch pricing.",
+          "cta": {
+            "label": "Claim 50% off",
+            "href": "/checkout?plan=launch"
+          },
+          "cta_secondary": {
+            "label": "See pricing",
+            "href": "/pricing"
+          }
+        }
+      ]
+    },
+    "text": {
+      "type": "text",
+      "title": "Text / prose",
+      "summary": "Markdown-driven prose block with optional heading + eyebrow. The general-purpose narrative section.",
+      "whenToUse": "Use for any explanatory text — about copy, methodology, longer-form content embedded inside a marketing page. For full blog posts use the post pipeline; for short statements prefer hero or cta.",
+      "defaults": {
+        "width": "prose",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "heading_level": {
+            "default": 2,
+            "anyOf": [
+              {
+                "type": "number",
+                "const": 2
+              },
+              {
+                "type": "number",
+                "const": 3
+              }
+            ]
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 50000
+          }
+        },
+        "required": [
+          "heading_level"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "About supa.page",
+          "heading_level": 2,
+          "body": "supa.page lets you ship marketing sites by talking to Claude. **No visual editor. No templates to fight.**"
+        },
+        {
+          "eyebrow": "Methodology",
+          "title": "How the rankings work",
+          "heading_level": 2,
+          "body": "1. We pull data from the official sources.\n2. We normalise units.\n3. We publish weekly.\n\nSee the [full methodology](/methodology)."
+        }
+      ]
+    },
+    "faq": {
+      "type": "faq",
+      "title": "FAQ",
+      "summary": "Disclosure-based Q&A. Auto-emits FAQPage JSON-LD for AI search citations.",
+      "whenToUse": "Use to surface 3–12 common questions. For long-form support content use a dedicated docs site, not an FAQ section.",
+      "defaults": {
+        "width": "default",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "behavior": {
+            "default": "single",
+            "type": "string",
+            "enum": [
+              "single",
+              "multiple",
+              "open"
+            ]
+          },
+          "items": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "answer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 5000
+                },
+                "id": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              },
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "behavior",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "Frequently asked questions",
+          "behavior": "single",
+          "items": [
+            {
+              "question": "Can I use a custom domain?",
+              "answer": "Yes — every paid plan includes one custom domain."
+            },
+            {
+              "question": "Do I need to write code?",
+              "answer": "No. Claude writes the site for you in plain language."
+            }
+          ]
+        }
+      ]
+    },
+    "feature-grid": {
+      "type": "feature-grid",
+      "title": "Feature grid",
+      "summary": "2-, 3-, or 4-column grid of features with optional icon, description, and per-item CTA.",
+      "whenToUse": "Use to break down a product into 3–9 atomic features. For deeper differentiation use comparison or stats. For 1–2 items, use hero + a single secondary section instead.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "columns": {
+            "default": 3,
+            "anyOf": [
+              {
+                "type": "number",
+                "const": 2
+              },
+              {
+                "type": "number",
+                "const": 3
+              },
+              {
+                "type": "number",
+                "const": 4
+              }
+            ]
+          },
+          "items": {
+            "minItems": 1,
+            "maxItems": 24,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "icon": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "cta": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "href": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2048
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "href"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "columns",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "Why teams pick supa.page",
+          "columns": 3,
+          "items": [
+            {
+              "title": "Talk, ship, iterate",
+              "description": "Tell Claude what changed and the site updates.",
+              "icon": "💬"
+            },
+            {
+              "title": "Your own domain",
+              "description": "Custom domain with TLS on every paid plan.",
+              "icon": "🌐"
+            },
+            {
+              "title": "No visual editor",
+              "description": "No templates to fight. Plain language.",
+              "icon": "⌨️"
+            }
+          ]
+        },
+        {
+          "eyebrow": "How it works",
+          "title": "Three steps",
+          "columns": 3,
+          "items": [
+            {
+              "title": "Describe",
+              "description": "Tell Claude what site you want.",
+              "cta": {
+                "label": "See examples",
+                "href": "/examples"
+              }
+            },
+            {
+              "title": "Iterate",
+              "description": "Ask for changes in plain language."
+            },
+            {
+              "title": "Publish",
+              "description": "Live on your domain in seconds."
+            }
+          ]
+        }
+      ]
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "title": "Cookie consent banner",
+      "summary": "EU/UK-compliant consent banner. Persists choice in localStorage; gates analytics on accept.",
+      "whenToUse": "Use on every public marketing site that runs analytics or tracking, regardless of jurisdiction. The banner self-dismisses once a choice is persisted.",
+      "defaults": {
+        "width": "full",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "message": {
+            "default": "We use cookies to measure traffic on this site.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "accept_label": {
+            "default": "Accept",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "decline_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "policy_href": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "policy_label": {
+            "default": "Privacy policy",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "message",
+          "accept_label",
+          "policy_label"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "message": "We use cookies to measure traffic on this site.",
+          "accept_label": "Accept",
+          "policy_href": "/privacy",
+          "policy_label": "Privacy policy"
+        },
+        {
+          "message": "This site uses analytics cookies to understand how you read.",
+          "accept_label": "Accept analytics",
+          "decline_label": "Decline",
+          "policy_href": "/cookies",
+          "policy_label": "Cookies"
+        }
+      ]
+    },
+    "newsletter-form": {
+      "type": "newsletter-form",
+      "title": "Newsletter signup form",
+      "summary": "Single-input email capture with AJAX submit + success swap. Falls back to a native form post.",
+      "whenToUse": "Use to collect email subscribers on landing pages, blog footers, or above the fold. For full lead-capture (name, company, message), use a dedicated contact-form block instead.",
+      "defaults": {
+        "width": "default",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "placeholder": {
+            "default": "you@example.com",
+            "type": "string",
+            "maxLength": 120
+          },
+          "submit_label": {
+            "default": "Subscribe",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "success_message": {
+            "default": "Thanks — check your inbox.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "list_id": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "action",
+          "placeholder",
+          "submit_label",
+          "success_message"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "Get weekly updates",
+          "description": "New posts, no spam. Unsubscribe anytime.",
+          "action": "/api/newsletter/subscribe",
+          "submit_label": "Subscribe",
+          "success_message": "You're in. Look out for the next issue."
+        },
+        {
+          "eyebrow": "Stay in the loop",
+          "title": "Join 1,200 builders",
+          "action": "https://example.com/list-subscribe",
+          "list_id": "launch",
+          "submit_label": "Sign me up"
+        }
+      ]
+    },
+    "hero-centered": {
+      "type": "hero-centered",
+      "title": "Hero — centered",
+      "summary": "Above-the-fold centered hero. Optional badge, h1 headline, description, up to two CTAs, optional microcopy line.",
+      "whenToUse": "Use as the first section on a landing or product page. The single most-edited block — every site has one. Prefer this variant for product pitches, marketing pages, and announcement-driven launches. For asymmetric layouts use hero-split-image; for stat-heavy hooks use hero-stats.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "badge": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "cta_secondary": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "microcopy": {
+            "type": "string",
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "badge": {
+            "label": "New · Atlas 2.0 is live"
+          },
+          "title": "The fastest way to ship marketing pages your customers actually read.",
+          "description": "Atlas turns plain JSON into production-grade marketing sites. No build step, no framework lock-in.",
+          "cta": {
+            "label": "Start building",
+            "href": "/signup"
+          },
+          "cta_secondary": {
+            "label": "Read the docs",
+            "href": "/docs"
+          },
+          "microcopy": "Free for 14 days · No credit card required"
+        },
+        {
+          "title": "Build it in plain English. Ship it on your domain.",
+          "description": "Describe what you want. Claude builds. You publish.",
+          "cta": {
+            "label": "Get started",
+            "href": "/signup"
+          }
+        }
+      ]
+    },
+    "pricing-cards-3": {
+      "type": "pricing-cards-3",
+      "title": "Pricing — 3 cards",
+      "summary": "Three pricing tiers side-by-side with optional featured highlight + floating \"Most popular\" badge.",
+      "whenToUse": "Use for SaaS pricing pages with exactly 3 tiers (Starter / Team / Business is the canonical shape). For 1-2 tiers prefer pricing-simple; for tier comparison matrices use pricing-table.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "tiers": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "price": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20
+                },
+                "period": {
+                  "type": "string",
+                  "maxLength": 20
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "features": {
+                  "minItems": 1,
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "cta": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "href": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2048
+                    },
+                    "variant": {
+                      "type": "string",
+                      "enum": [
+                        "secondary",
+                        "accent"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "href"
+                  ],
+                  "additionalProperties": false
+                },
+                "featured": {
+                  "type": "boolean"
+                },
+                "badge": {
+                  "type": "string",
+                  "maxLength": 40
+                }
+              },
+              "required": [
+                "name",
+                "price",
+                "features",
+                "cta"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "tiers"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Pricing",
+          "title": "Honest plans. No salesperson required.",
+          "description": "Annual billing saves 20%. All plans include unlimited bandwidth.",
+          "tiers": [
+            {
+              "name": "Starter",
+              "price": "$0",
+              "period": "/mo",
+              "description": "For solo developers shipping side projects.",
+              "features": [
+                "1 site, 100 pages",
+                "Subdomain",
+                "Community Discord"
+              ],
+              "cta": {
+                "label": "Start free",
+                "href": "/signup",
+                "variant": "secondary"
+              }
+            },
+            {
+              "name": "Team",
+              "price": "$24",
+              "period": "/mo",
+              "description": "For startups graduating from a landing-page builder.",
+              "features": [
+                "5 sites, unlimited pages",
+                "Custom domain",
+                "5 seats",
+                "Email support"
+              ],
+              "cta": {
+                "label": "Start trial",
+                "href": "/signup?plan=team",
+                "variant": "accent"
+              },
+              "featured": true
+            },
+            {
+              "name": "Business",
+              "price": "$99",
+              "period": "/mo",
+              "description": "For marketing teams running real revenue traffic.",
+              "features": [
+                "Unlimited sites",
+                "SSO + audit log",
+                "SLA 99.99%",
+                "Dedicated support"
+              ],
+              "cta": {
+                "label": "Talk to sales",
+                "href": "/contact",
+                "variant": "secondary"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "testimonials-grid-3": {
+      "type": "testimonials-grid-3",
+      "title": "Testimonials — 3 cards",
+      "summary": "Three customer quotes side-by-side. Each card has optional 5-star rating, blockquote, avatar + name + role.",
+      "whenToUse": "Use for social-proof sections with 3 named, on-page testimonials. Anonymous quotes should NOT be marked up — they break the Google self-serving-reviews policy guard in the future schema emission. For more quotes use testimonials-masonry; for one hero quote use testimonial-quote-big.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "items": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "author": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "role": {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "avatar_src": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "rating": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "const": 1
+                    },
+                    {
+                      "type": "number",
+                      "const": 2
+                    },
+                    {
+                      "type": "number",
+                      "const": 3
+                    },
+                    {
+                      "type": "number",
+                      "const": 4
+                    },
+                    {
+                      "type": "number",
+                      "const": 5
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "quote",
+                "author"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "From the customers",
+          "title": "Real teams shipping real pages.",
+          "items": [
+            {
+              "quote": "Cut our marketing-site bug reports by 70%. The schema validation catches everything before production.",
+              "author": "Lior Shafir",
+              "role": "CTO, Mintbox",
+              "rating": 5
+            },
+            {
+              "quote": "I'm a designer. I shipped a 14-page site without opening a code editor. The result looks like our brand.",
+              "author": "Anika Patel",
+              "role": "Brand lead, Ferment",
+              "rating": 5
+            },
+            {
+              "quote": "The IndexNow integration started showing up in ChatGPT answers within four days.",
+              "author": "Yusuf Karim",
+              "role": "Head of growth, Lattice",
+              "rating": 5
+            }
+          ]
+        }
+      ]
+    },
+    "stats-row-4": {
+      "type": "stats-row-4",
+      "title": "Stats — 4-up row",
+      "summary": "Four pre-formatted stats in a divided row. No structured data emission per the design-system spec.",
+      "whenToUse": "Use for at-a-glance metrics (uptime, customers, performance numbers). For numbers needing context use stats-with-context; for narrative-led numbers fold them into the page description prose instead.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 4,
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "value": "4,200+",
+              "label": "Active sites"
+            },
+            {
+              "value": "127M",
+              "label": "Pages served · this month"
+            },
+            {
+              "value": "37 ms",
+              "label": "Median TTFB"
+            },
+            {
+              "value": "99.99%",
+              "label": "Uptime, last 12 months"
+            }
+          ]
+        }
+      ]
+    },
+    "logos-row": {
+      "type": "logos-row",
+      "title": "Logos — single row",
+      "summary": "Single-row customer logo cloud. Each item is an image OR a styled wordmark. Emits no structured data.",
+      "whenToUse": "Use to show \"Trusted by\" or \"As featured in\" rows. For framed multi-row grids use logos-grid. Keep to 4-10 items — beyond 10 the row gets too dense; switch to logos-grid.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "caption": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "items": {
+            "minItems": 2,
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "src": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "style": {
+                  "type": "string",
+                  "enum": [
+                    "sans",
+                    "serif",
+                    "mono",
+                    "caps",
+                    "rounded"
+                  ]
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "caption": "Trusted by teams at",
+          "items": [
+            {
+              "name": "Layerset",
+              "style": "sans"
+            },
+            {
+              "name": "Pomelo",
+              "style": "rounded"
+            },
+            {
+              "name": "BRIGADOON",
+              "style": "caps"
+            },
+            {
+              "name": "mintbox",
+              "style": "mono"
+            },
+            {
+              "name": "Ferment",
+              "style": "serif"
+            },
+            {
+              "name": "Lattice",
+              "style": "sans"
+            },
+            {
+              "name": "Heron",
+              "style": "rounded"
+            },
+            {
+              "name": "QUOIR",
+              "style": "caps"
+            }
+          ]
+        }
+      ]
+    },
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "title": "Announcement bar",
+      "summary": "Top-of-page strip with badge, message, optional promo code, CTA link, and dismissible X button. Persists choice.",
+      "whenToUse": "Use for time-sensitive announcements at the top of every page: product launches, sales, status updates. Rotate the `id` field when the announcement content changes — that re-shows the bar to users who dismissed the previous one.",
+      "defaults": {
+        "width": "full",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "badge": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "dismissible": {
+            "default": true,
+            "type": "boolean"
+          },
+          "id": {
+            "default": "default",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "message",
+          "dismissible",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "badge": "New",
+          "message": "Atlas v3 is now generally available — get 30% off year one",
+          "code": "SHIP30",
+          "cta": {
+            "label": "Read announcement",
+            "href": "/blog/atlas-v3"
+          },
+          "dismissible": true,
+          "id": "atlas-v3"
+        },
+        {
+          "message": "Maintenance window this Sunday 02:00-04:00 UTC",
+          "cta": {
+            "label": "Status",
+            "href": "https://status.example.com"
+          },
+          "dismissible": true,
+          "id": "maint-2026-05"
+        }
+      ]
+    },
+    "cta-banner": {
+      "type": "cta-banner",
+      "title": "CTA — banner",
+      "summary": "Single-row accent banner with title + description on the left, large CTA on the right.",
+      "whenToUse": "Use as a mid-page or footer-adjacent conversion strip when you want a tight, single-action prompt. For above-the-fold use hero-centered; for closing conversion blocks use cta-centered.",
+      "defaults": {
+        "width": "wide",
+        "background": "accent"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "title",
+          "cta"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "title": "Atlas v3 is out. Migrate by Aug 1 for 30% off year one.",
+          "description": "Existing v2 customers get the upgrade free. New customers get the discount.",
+          "cta": {
+            "label": "Claim discount",
+            "href": "/pricing?promo=ship30"
+          }
+        },
+        {
+          "title": "Ready to ship faster?",
+          "cta": {
+            "label": "Start free",
+            "href": "/signup"
+          }
+        }
+      ]
+    },
+    "features-grid-6": {
+      "type": "features-grid-6",
+      "title": "Features — 6-up grid",
+      "summary": "Six features in a 3×2 divided grid. Each cell has optional inline icon + h3 title + short body.",
+      "whenToUse": "Use when you have exactly 6 capabilities to surface. For 3-4 use features-grid-3; for asymmetric mix use features-bento; for paragraph-rich features use features-alt.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "items": {
+            "minItems": 6,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "icon": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "body": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 280
+                }
+              },
+              "required": [
+                "title",
+                "body"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Everything in the box",
+          "title": "Capability sprawl, organised.",
+          "items": [
+            {
+              "icon": "Bolt",
+              "title": "Edge-first",
+              "body": "Pinned isolates per POP. First invocation in 3ms."
+            },
+            {
+              "icon": "Shield",
+              "title": "Audit by default",
+              "body": "Every edit is logged with author, timestamp, and diff."
+            },
+            {
+              "icon": "Globe",
+              "title": "Custom domain",
+              "body": "Auto-TLS, IPv6, HTTP/3. Apex domains supported."
+            },
+            {
+              "icon": "Database",
+              "title": "Typed content",
+              "body": "Zod schemas validate every block before publish."
+            },
+            {
+              "icon": "Layers",
+              "title": "Cascade layers",
+              "body": "Customer overrides win without !important wars."
+            },
+            {
+              "icon": "Code",
+              "title": "Open source primitives",
+              "body": "tokens.css + primitives.css are MIT. Fork them."
+            }
+          ]
+        }
+      ]
+    },
+    "team-grid": {
+      "type": "team-grid",
+      "title": "Team — 4-up grid",
+      "summary": "Team members in a 4-column grid. Each member has a photo OR initials avatar, plus name and role.",
+      "whenToUse": "Use on About / Team pages with 4-12 members. For leadership-only lists with social links use team-list. Schema contributes to Organization.employee[] in the page-level @graph (per the SEO/GEO plan).",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "members": {
+            "minItems": 2,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "role": {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "photo_src": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "photo_width": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "photo_height": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "members"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Who we are",
+          "title": "A small team of repeat builders.",
+          "description": "Twelve humans across Lisbon, Brooklyn, and Lagos.",
+          "members": [
+            {
+              "name": "Sarah Chen",
+              "role": "CEO"
+            },
+            {
+              "name": "Mira Adelman",
+              "role": "CTO"
+            },
+            {
+              "name": "Lior Shafir",
+              "role": "Engineering"
+            },
+            {
+              "name": "Anika Patel",
+              "role": "Design"
+            }
+          ]
+        }
+      ]
+    },
+    "nav-simple": {
+      "type": "nav-simple",
+      "title": "Navigation — simple header",
+      "summary": "Page header with brand wordmark + top-level nav links + optional login/CTA buttons.",
+      "whenToUse": "Use as the page header on most marketing sites. For dropdown menus + search use nav-mega. The page renderer should treat nav blocks as page-level chrome (rendered once at the top) once chrome handling lands in A4.",
+      "defaults": {
+        "width": "full",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "brand_href": {
+            "default": "/",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "links": {
+            "default": [],
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "href": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              },
+              "required": [
+                "label",
+                "href"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "login": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "brand",
+          "brand_href",
+          "links"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "brand": "Atlas",
+          "links": [
+            {
+              "label": "Product",
+              "href": "/product"
+            },
+            {
+              "label": "Customers",
+              "href": "/customers"
+            },
+            {
+              "label": "Pricing",
+              "href": "/pricing"
+            },
+            {
+              "label": "Docs",
+              "href": "/docs"
+            },
+            {
+              "label": "Blog",
+              "href": "/blog"
+            }
+          ],
+          "login": {
+            "label": "Log in",
+            "href": "/login"
+          },
+          "cta": {
+            "label": "Sign up",
+            "href": "/signup"
+          }
+        },
+        {
+          "brand": "Acme",
+          "brand_href": "/",
+          "links": [
+            {
+              "label": "Features",
+              "href": "/#features"
+            },
+            {
+              "label": "Pricing",
+              "href": "/pricing"
+            }
+          ],
+          "cta": {
+            "label": "Start free",
+            "href": "/signup"
+          }
+        }
+      ]
+    },
+    "footer-simple": {
+      "type": "footer-simple",
+      "title": "Footer — simple",
+      "summary": "Page footer with brand wordmark + copyright, link list, and optional social icon links.",
+      "whenToUse": "Use as the page footer on most marketing sites. Single-row layout that wraps on narrow viewports. For a multi-column footer with grouped link columns, use footer-columns (not yet shipped).",
+      "defaults": {
+        "width": "full",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "copyright": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "links": {
+            "default": [],
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "href": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              },
+              "required": [
+                "label",
+                "href"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "social": {
+            "type": "object",
+            "properties": {
+              "github": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "twitter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "linkedin": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "email": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "brand",
+          "links"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "brand": "Atlas",
+          "copyright": "© 2026 Atlas Labs, Inc.",
+          "links": [
+            {
+              "label": "Privacy",
+              "href": "/privacy"
+            },
+            {
+              "label": "Terms",
+              "href": "/terms"
+            },
+            {
+              "label": "Status",
+              "href": "https://status.atlas.com"
+            },
+            {
+              "label": "Contact",
+              "href": "/contact"
+            }
+          ],
+          "social": {
+            "github": "https://github.com/atlas",
+            "twitter": "https://twitter.com/atlas",
+            "linkedin": "https://www.linkedin.com/company/atlas"
+          }
+        },
+        {
+          "brand": "Acme",
+          "copyright": "© 2026 Acme Inc.",
+          "links": [
+            {
+              "label": "Privacy",
+              "href": "/privacy"
+            },
+            {
+              "label": "Terms",
+              "href": "/terms"
+            }
+          ],
+          "social": {
+            "email": "mailto:hello@acme.com"
+          }
+        }
+      ]
+    },
+    "hero-split-image": {
+      "type": "hero-split-image",
+      "title": "Hero — split with image",
+      "summary": "Asymmetric two-column hero. Eyebrow + h1 + description + two CTAs on the left, feature image on the right.",
+      "whenToUse": "Use as the first section on product, launch, or marketing pages where a feature image, screenshot, or hero shot meaningfully supports the headline. Prefer over hero-centered when the visual is the proof. For pure text above-the-fold use hero-centered; for stat-led openings use hero-stats.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "cta_secondary": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "width": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "height": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "src",
+              "alt",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false
+          },
+          "cta_variant": {
+            "default": "primary",
+            "type": "string",
+            "enum": [
+              "accent",
+              "primary"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "image",
+          "cta_variant"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Identity infrastructure",
+          "title": "Auth that disappears into your product.",
+          "description": "Drop-in components, SSO on every plan tier, audit trails by default. Built by the same team behind the Stripe of identity.",
+          "cta": {
+            "label": "Get started free",
+            "href": "/signup"
+          },
+          "cta_secondary": {
+            "label": "Book a demo",
+            "href": "/demo"
+          },
+          "image": {
+            "src": "/images/hero-auth-dashboard.png",
+            "alt": "Authentication dashboard showing live session activity and SSO connections.",
+            "width": 1600,
+            "height": 1200
+          },
+          "cta_variant": "accent"
+        },
+        {
+          "title": "The fastest path from a CSV to a forecast.",
+          "description": "Upload anything tabular. Atlas builds the model, the dashboard, and the alerts.",
+          "cta": {
+            "label": "Start free trial",
+            "href": "/signup"
+          },
+          "image": {
+            "src": "/images/hero-forecast.jpg",
+            "alt": "Forecasting dashboard with quarterly revenue projections.",
+            "width": 1440,
+            "height": 1080
+          }
+        }
+      ]
+    },
+    "hero-stats": {
+      "type": "hero-stats",
+      "title": "Hero — with stats",
+      "summary": "Centered hero with eyebrow, h1, description, up to two CTAs, plus a 3-stat row that doubles as social proof.",
+      "whenToUse": "Use as the first section when the pitch leans on concrete numbers (ARR, customer count, uptime, throughput). Prefer over hero-centered when proof points are load-bearing. For pure benefit-led copy use hero-centered; for standalone metrics deeper on the page use stats-row-4.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "stats": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "cta_secondary": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "title",
+          "stats"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Trusted by builders shipping every day",
+          "title": "The fastest way to ship marketing pages your customers actually read.",
+          "description": "Atlas turns plain JSON into production-grade marketing sites. Edge-rendered, no build step, no framework lock-in.",
+          "stats": [
+            {
+              "value": "$2.1M",
+              "label": "ARR · run rate"
+            },
+            {
+              "value": "4,200",
+              "label": "Live sites"
+            },
+            {
+              "value": "99.99%",
+              "label": "Uptime, last 12 months"
+            }
+          ],
+          "cta": {
+            "label": "Start free",
+            "href": "/signup"
+          },
+          "cta_secondary": {
+            "label": "See pricing",
+            "href": "/pricing"
+          }
+        },
+        {
+          "eyebrow": "Built for scale",
+          "title": "The CDN that keeps 99.99% of your customers happy.",
+          "description": "Edge compute, image optimisation, and instant cache invalidation — shipped from 280+ POPs.",
+          "stats": [
+            {
+              "value": "280+",
+              "label": "POPs worldwide"
+            },
+            {
+              "value": "37 ms",
+              "label": "p50 global TTFB"
+            },
+            {
+              "value": "12 PB",
+              "label": "Cached daily"
+            }
+          ],
+          "cta": {
+            "label": "Start free",
+            "href": "/signup"
+          }
+        }
+      ]
+    },
+    "hero-minimal": {
+      "type": "hero-minimal",
+      "title": "Hero — minimal",
+      "summary": "Stripped-down hero. Small eyebrow, h1, one description sentence, one CTA. Left-aligned, narrow column.",
+      "whenToUse": "Use when content matters more than decoration — editorial homepages, manifestos, indie projects, personal sites, anything that wants quiet confidence. Prefer hero-centered for product launches with badges and dual CTAs; prefer hero-split-image when a visual carries the pitch.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Issue 042 · May 2026",
+          "title": "A magazine for people who still read.",
+          "description": "Weekly essays, no scroll-jacking, no clickbait. Hand-set by an editor who used to work at Harper’s.",
+          "cta": {
+            "label": "Subscribe — $6/mo",
+            "href": "/subscribe"
+          }
+        },
+        {
+          "title": "I write software, mostly for myself.",
+          "description": "Notes on small tools, side projects, and the slow craft of building things that last.",
+          "cta": {
+            "label": "Read the archive",
+            "href": "/archive"
+          }
+        }
+      ]
+    },
+    "pricing-simple": {
+      "type": "pricing-simple",
+      "title": "Pricing — single tier",
+      "summary": "Centred single-tier pricing card with name, price, blurb, feature list, and one CTA.",
+      "whenToUse": "Use for solo products / one-plan SaaS / lifetime deals / one-off purchases where there is exactly one offering to sell. For 3 tiers use pricing-cards-3; for comparison matrices use pricing-table.",
+      "defaults": {
+        "width": "default",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "tier_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "period": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "blurb": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "features": {
+            "minItems": 1,
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "tier_name",
+          "price",
+          "features",
+          "cta"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Pricing",
+          "title": "One plan. Everything included.",
+          "description": "No tiers, no upsells. Cancel any time.",
+          "tier_name": "Pro",
+          "price": "$19",
+          "period": "/mo",
+          "blurb": "Everything you need to ship a marketing site this afternoon.",
+          "features": [
+            "Unlimited sites and pages",
+            "Custom domains with auto-SSL",
+            "Edit via Claude or the dashboard",
+            "Live preview before publish",
+            "Email support"
+          ],
+          "cta": {
+            "label": "Start 14-day trial",
+            "href": "/signup"
+          }
+        },
+        {
+          "eyebrow": "Lifetime · One payment",
+          "title": "The book, in print and PDF.",
+          "description": "318 pages, 16 case studies, every figure typeset in InDesign.",
+          "tier_name": "Lifetime",
+          "price": "$48",
+          "blurb": "Ships from Brooklyn in two weeks. Free updates forever.",
+          "features": [
+            "Hardcover print edition",
+            "Searchable PDF",
+            "Free updates for life",
+            "60-day return window"
+          ],
+          "cta": {
+            "label": "Pre-order now",
+            "href": "https://example.com/buy"
+          }
+        }
+      ]
+    },
+    "testimonial-quote-big": {
+      "type": "testimonial-quote-big",
+      "title": "Testimonial — big quote",
+      "summary": "Single oversized pull-quote, centered. Large serif italic blockquote with avatar + name + role beneath.",
+      "whenToUse": "Use for ONE hero testimonial that should dominate a section — a quote pulled from a customer interview or Slack (with permission). For 3 named quotes side-by-side use testimonials-grid-3. Anonymous quotes should NOT be marked up — they break the Google self-serving-reviews policy guard in the future schema emission.",
+      "defaults": {
+        "width": "default",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 800
+          },
+          "author": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "avatar_src": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "number",
+                "const": 1
+              },
+              {
+                "type": "number",
+                "const": 2
+              },
+              {
+                "type": "number",
+                "const": 3
+              },
+              {
+                "type": "number",
+                "const": 4
+              },
+              {
+                "type": "number",
+                "const": 5
+              }
+            ]
+          },
+          "case_study": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "quote",
+          "author"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "Customer story",
+          "quote": "I've tried every flat-file CMS in the last decade. This is the first one whose JSON I'd hand to a non-developer and trust them not to break the site.",
+          "author": "Dario Vega",
+          "role": "Engineering manager",
+          "company": "Brigadoon",
+          "rating": 5,
+          "case_study": {
+            "label": "Read the integration",
+            "href": "/customers/brigadoon"
+          }
+        },
+        {
+          "quote": "We replaced four tools and a part-time developer with supa.page. Six weeks in, we ship more, not less, and the marketing team owns the site end-to-end.",
+          "author": "Reema Gupta",
+          "role": "VP Marketing",
+          "company": "Layerset",
+          "avatar_src": "https://images.example.com/avatars/reema-gupta.jpg"
+        }
+      ]
+    },
+    "stats-with-context": {
+      "type": "stats-with-context",
+      "title": "Stats — with context",
+      "summary": "Two-column block: left has eyebrow + h2 + description + optional ghost link; right has a 2×2 grid of accent-coloured stats.",
+      "whenToUse": "Use when numbers need narrative framing — annual recap, milestone post, \"by the numbers\" deep-cut. For a stand-alone divided row of metrics use stats-row-4. For metrics that headline the page use hero-stats.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "cta": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "href": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              }
+            },
+            "required": [
+              "label",
+              "href"
+            ],
+            "additionalProperties": false
+          },
+          "stats": {
+            "minItems": 4,
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                }
+              },
+              "required": [
+                "value",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "stats"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "By the numbers",
+          "title": "The first year, summarised.",
+          "description": "We started shipping in February 2025 with seven beta customers. Twelve months later, here's where we are — and where we're going.",
+          "cta": {
+            "label": "Read the year-in-review",
+            "href": "/blog/year-one"
+          },
+          "stats": [
+            {
+              "value": "$2.1M",
+              "label": "Annual recurring revenue"
+            },
+            {
+              "value": "4,200",
+              "label": "Active sites built"
+            },
+            {
+              "value": "38",
+              "label": "Countries served"
+            },
+            {
+              "value": "12",
+              "label": "Engineers shipping"
+            }
+          ]
+        },
+        {
+          "eyebrow": "Platform health",
+          "title": "Built to stay up while you sleep.",
+          "description": "Edge-rendered pages, automatic image optimisation, and instant cache invalidation across 280+ POPs — measured every minute, reported quarterly.",
+          "cta": {
+            "label": "See the status page",
+            "href": "https://status.example.com"
+          },
+          "stats": [
+            {
+              "value": "99.99%",
+              "label": "Uptime · last 12 months"
+            },
+            {
+              "value": "37 ms",
+              "label": "p50 global TTFB"
+            },
+            {
+              "value": "280+",
+              "label": "Edge POPs"
+            },
+            {
+              "value": "12 PB",
+              "label": "Cached daily"
+            }
+          ]
+        }
+      ]
+    },
+    "steps-numbered": {
+      "type": "steps-numbered",
+      "title": "Steps — numbered row",
+      "summary": "3–6 numbered circular badges in a horizontal row connected by a thin line. Each step has a title and short body.",
+      "whenToUse": "Use for process / how-it-works narratives with a strict, ordered sequence (3–6 steps). For unordered capabilities use features-grid-3 or features-grid-6; for longer narrative steps with imagery use steps-stacked.",
+      "defaults": {
+        "width": "wide",
+        "background": "bg"
+      },
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "steps": {
+            "minItems": 3,
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "body": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 280
+                }
+              },
+              "required": [
+                "title",
+                "body"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "additionalProperties": false
+      },
+      "examples": [
+        {
+          "eyebrow": "How it works",
+          "title": "From signup to live site in four steps.",
+          "steps": [
+            {
+              "title": "Pick a theme",
+              "body": "Choose from 14 token-driven themes, or start from blank."
+            },
+            {
+              "title": "Connect content",
+              "body": "Import from Notion, Markdown, or your existing site."
+            },
+            {
+              "title": "Preview locally",
+              "body": "See changes in real time. Share preview URLs with your team."
+            },
+            {
+              "title": "Ship to prod",
+              "body": "Deploy to your domain. CDN propagation in 1.2 seconds."
+            }
+          ]
+        },
+        {
+          "eyebrow": "Onboarding",
+          "title": "Three steps to your first deploy.",
+          "description": "No credit card, no template wrestling. Just describe and ship.",
+          "steps": [
+            {
+              "title": "Describe",
+              "body": "Tell Claude what site you want in plain language."
+            },
+            {
+              "title": "Iterate",
+              "body": "Refine sections, copy, and theme by chatting."
+            },
+            {
+              "title": "Publish",
+              "body": "One command pushes live to your custom domain."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

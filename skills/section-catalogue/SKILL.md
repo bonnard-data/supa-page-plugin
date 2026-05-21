@@ -1,117 +1,96 @@
 ---
 name: section-catalogue
-description: This skill should be used when authoring or editing supa.page pages — anything that goes through `upsert_page` / the `Page.sections[]` shape — or when the user asks to "add a hero section", "add a pricing block", "build a landing page", "add testimonials", "add an FAQ", "add a CTA", "list section types", "what sections does supa.page support", or mentions any of the 15 section types (hero, feature-grid, cta, quote, faq, text, post-feed, raw-embed, pricing, logos, announcement-bar, testimonials, stats, steps, team).
-version: 0.4.0
+description: This skill should be used when authoring or editing supa.page pages — anything that goes through `upsert_page` / the `Page.sections[]` shape — or when the user asks to "add a hero", "add a pricing block", "build a landing page", "add testimonials", "add an FAQ", "add a CTA", "what blocks exist", "list block types", "what sections does supa.page support". The renderer ships a 24-block catalogue (hero, features, pricing, testimonials, faq, cta, stats, logos, nav, footer, plus interactive blocks); use `list_blocks` for the live inventory.
+version: 0.5.0
 ---
 
-# supa.page section catalogue
+# supa.page block catalogue
 
-This skill is the authoritative reference for the closed section catalogue that backs every supa.page page. A page object looks like:
+This skill governs how to author pages on supa.page. The renderer accepts a fixed catalogue of block types; each has a strict Zod schema. Compose pages by selecting from the catalogue, filling typed props, and pushing via `upsert_page`.
 
-```json
-{
-  "slug": "index",
-  "title": "Required",
-  "description": "Optional <meta>",
-  "sections": [ { "type": "hero", ... } ]
-}
-```
+## The authoring loop
 
-In v0.4.0 pages are SQLite rows. You write them via `upsert_page({site, slug, page})`; the renderer walks `sections[]` in order and maps each entry to its Lit component. Unknown `type` values render hidden; the platform refuses no edits but the user sees a blank slot.
+Follow this loop for every page edit:
 
-## The 15 section types
+1. **Discover** the catalogue when needed via `mcp__plugin_supa-page-plugin_supa-page__list_blocks`. Returns `{type, title, summary, whenToUse}` for every block. Use this to choose which blocks fit the brief.
 
-| Type | Purpose |
+2. **Inspect one block** via `mcp__plugin_supa-page-plugin_supa-page__get_block` with `{type: "<block-type>"}`. Returns the full JSON Schema, defaults, and 1–3 canonical examples. The examples are the prop-shape ground truth — copy and adapt them rather than guessing field names.
+
+3. **Compose** the page object: `{title, description?, og_image?, sections: [...]}`. Each section is `{type, ...block-specific-props}`. Universal layout props that the page renderer reads (not the block): `width`, `background`.
+
+4. **Validate** before upsert via `mcp__plugin_supa-page-plugin_supa-page__validate_block` with `{type, data}` for each section. Returns `{ok, errors: [{path, expected, got, hint}]}`. Fix every error returned — the schema is `.strict()` and rejects unknown keys. If an error mentions a field name you don't recognise, re-fetch `get_block({type})` for the canonical schema; don't guess.
+
+5. **Upsert** via `mcp__plugin_supa-page-plugin_supa-page__upsert_page` with `{site, slug, page}`. The response includes `previewUrl` and `liveUrl` — surface both to the user.
+
+6. **Surface the preview URL** to the user. The preview URL renders from `*_draft` tables and auto-reloads via SSE when any draft row changes. The user can keep the tab open while iterating. The live URL only updates on `publish_site`.
+
+## Block categories
+
+The 24 blocks group into eight categories. Use `list_blocks` for the current set; this is a navigation aid:
+
+| Category | Blocks |
 |---|---|
-| `hero` | Top-of-page introduction with title + CTAs |
-| `feature-grid` | Capability tiles in 2–4 columns |
-| `cta` | Stand-alone call-to-action band |
-| `quote` | Single testimonial |
-| `testimonials` | Multi-testimonial grid or carousel |
-| `faq` | Disclosure list (auto-emits FAQPage JSON-LD) |
-| `text` | Markdown prose block |
-| `post-feed` | Blog index pulling from posts on this site |
-| `pricing` | Tiered pricing cards |
-| `logos` | Customer-logo cloud (grid or marquee) |
-| `announcement-bar` | Thin top strip — launch / status / raise |
-| `stats` | Numbered tiles (e.g. "10M users") |
-| `steps` | Numbered "how it works" timeline |
-| `team` | People grid with photo + role |
-| `raw-embed` | Customer-authored HTML escape hatch (last resort) |
+| Hero | `hero-centered`, `hero-split-image`, `hero-stats`, `hero-minimal` |
+| Features | `feature-grid`, `features-grid-6` |
+| Pricing | `pricing-cards-3`, `pricing-simple` |
+| CTA | `cta` (centered), `cta-banner` |
+| Social proof | `testimonials-grid-3`, `testimonial-quote-big`, `logos-row` |
+| Narrative | `faq`, `text` (Markdown prose), `steps-numbered` |
+| Stats | `stats-row-4`, `stats-with-context` |
+| Team + chrome | `team-grid`, `nav-simple`, `footer-simple` |
+| Interactive | `announcement-bar`, `cookie-banner`, `newsletter-form` |
 
 ## Universal section props
 
-Every section type accepts these two layout props:
+Every section accepts these two layout props (handled by the page renderer, not the block schema):
 
-| Prop | Values | Default per-type |
+| Prop | Values | Default |
 |---|---|---|
-| `width` | `"prose"` (36rem) / `"default"` (56rem) / `"wide"` (72rem) / `"full"` (no max) | See `references/full-section-reference.md` |
-| `background` | `"bg"` / `"fg"` / `"accent"` / `"muted"` | See `references/full-section-reference.md` |
+| `width` | `"prose" \| "default" \| "wide" \| "full"` | per-block default |
+| `background` | `"bg" \| "fg" \| "accent" \| "muted" \| "soft" \| "strong" \| "inverse" \| "accent-soft"` | per-block default |
 
-Width is an enum, not pixels. Background is a semantic token, not a hex color. To change the literal accent color, set `theme_overrides` via `update_site_config` (see the `theme-tokens` skill) — never inline colors.
+Backgrounds are semantic tokens, not literal colours. To change brand colour, use `theme_overrides` via `update_site_config` (see the `theme-tokens` skill) — never inline hex values in section props.
 
-## Naming convention — canonical vs. legacy
+## Page anatomies
 
-The catalogue uses 2026 ecosystem naming (`title`, `description`, `eyebrow`, `cta`) — but every section also accepts the pre-v0.1.3 aliases for backward compatibility:
+Five proven recipes (see `references/composition-patterns.md` for details):
 
-| Canonical (preferred) | Legacy alias |
-|---|---|
-| `title` | `headline` (hero, cta) · `heading` (feature-grid, faq, text, post-feed, etc.) |
-| `description` | `sub` (hero, cta) · `body` (feature-grid items) |
-| `cta` | `button` (cta section) |
-| `author` / `role` / `company` | `name` / `byline` (quote) |
-| `question` / `answer` | `q` / `a` (faq items) |
-
-**Write canonical names** in new content. Old rows keep rendering correctly.
+1. **Indie SaaS landing**: `nav-simple` → `announcement-bar?` → `hero-centered` → `logos-row` → `features-grid-3` → `testimonials-grid-3` → `pricing-cards-3` → `faq` → `cta` → `footer-simple`
+2. **Dev tool / open source**: `nav-simple` → `hero-stats` → `features-grid-6` → `steps-numbered` → `stats-row-4` → `testimonial-quote-big` → `cta` → `footer-simple`
+3. **B2B / sales-led**: `nav-simple` → `hero-split-image` → `logos-row` → `features-grid-3` → `testimonials-grid-3` → `cta-banner` → `footer-simple`
+4. **Newsletter / writer**: `nav-simple` → `hero-minimal` → `text` (about) → `newsletter-form` → `footer-simple`
+5. **Single product**: `hero-split-image` → `features-grid-6` → `pricing-simple` → `faq` → `cta-banner`
 
 ## Anti-patterns
 
-- **Do not nest sections.** Sections are flat children of `sections[]`.
-- **Do not inline colors.** Use `theme_overrides` or `background` tokens.
-- **Do not invent section types.** `unknown-section` renders as a hidden div. If the catalogue doesn't have what you want, the right escape hatches are `raw-embed` (for one-offs) or a customer-authored Lit component (see `custom-components` skill).
-- **Do not put HTML in `text.body`.** `text.body` is **Markdown** — uses the same `marked` pipeline that renders blog posts. HTML inside Markdown works but isn't required.
-- **Do not write `columns: 5` on feature-grid.** Enum is `2 | 3 | 4`; anything else clamps to 3.
+- **Do not invent block types.** Unknown types render as `<div hidden data-unknown-section="...">`. Call `list_blocks` for the canonical set.
+- **Do not nest sections.** `sections[]` is flat.
+- **Do not inline colours.** Use `theme_overrides` or `background` tokens.
+- **Do not put HTML in `text.body`.** It is Markdown (the same `marked` pipeline as posts).
+- **Do not pass unknown keys.** Block schemas are `.strict()`; unknown keys are rejected with a `validate_block` error.
+- **Do not skip validation.** Schemas are strict; `validate_block` catches every wrong-shape mistake before the upsert.
 
-## Upsert-time validation
+## Authoring a new page
 
-The server validates the page object on every `upsert_page` call. A rejected page returns `{error, field}`:
+For a brand-new slug, `get_page` returns 404 — start from `{slug, title: "...", sections: []}` and build up.
 
-- `field: "title"` → required at root, non-empty string.
-- `field: "sections"` → if present, must be an array.
-- `field: "sections[i].type"` → must match `/^[a-z][a-z0-9-]{0,30}$/`.
+The `upsert_page` write replaces the entire draft row. There is no field-level patch. Always: `get_page` → modify locally → `upsert_page` (full object).
 
-The whole upsert rejects atomically — the draft row stays untouched on failure. Read the error, fix the object, upsert again.
+## Customisation ladder
 
-To **pre-validate locally** before upsert, run the bundled validator on the page object:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/skills/section-catalogue/scripts/validate-section.js path/to/page.json
-```
-
-(Pass any JSON file containing the page object — the validator inspects `title` + `sections[]` and doesn't care where the file lives on disk.)
-
-## Editing approach
-
-1. **Get the current page** via `get_page({site, slug})`. Slug conventions: `index` for `/`, `<slug>` for `/<slug>`, nested paths (`work/case-a` → `/work/case-a`) work.
-2. **Compose by section.** Start with a `hero`. Most landing pages then add `feature-grid` → `quote`/`testimonials` → `pricing` → `faq` → `cta`. The `references/composition-patterns.md` file documents proven recipes.
-3. **Use the examples.** Each section type has a canonical example at `${CLAUDE_PLUGIN_ROOT}/skills/section-catalogue/examples/<type>.json` — copy + adapt rather than authoring from memory.
-4. **Upsert the whole page.** `upsert_page` replaces the entire draft row — there's no field-level patch. Always read first, modify locally, write back.
-
-## Customization ladder
-
-When something doesn't look right, choose the highest level that solves it:
+When something doesn't look right, climb in this order. Stop at the first level that solves it:
 
 1. **Edit a section's props** (per-instance change — `upsert_page`).
 2. **Edit `theme_overrides` via `update_site_config`** (site-wide token change — see `theme-tokens` skill).
-3. **Edit `header`/`footer` via `update_site_config`** (site-wide chrome).
-4. **Add a `raw-embed` section** (one-off HTML+CSS, shadow-DOM scoped).
-5. **Author a custom Lit component** (rare; see `custom-components` skill).
+3. **Edit `header` / `footer` via `update_site_config`** (site-wide chrome — alternatively, use `nav-simple` + `footer-simple` blocks as page-level sections).
 
-Skip steps. Don't reach for `raw-embed` when a token override would do it.
+Custom-authored Lit components are not supported in v0.5; that path was removed when the renderer switched from Lit to frameworkless SSR. The 24-block catalogue plus theme overrides cover ~99% of real customer needs.
 
 ## Additional resources
 
-- **`references/full-section-reference.md`** — every section type, every prop, every default, with annotated JSON.
-- **`references/composition-patterns.md`** — five proven landing-page recipes.
-- **`examples/`** — one canonical JSON example per section type. Copy + adapt.
-- **`scripts/validate-section.js`** — pre-flight validator. Same logic the server runs on `upsert_page`.
+- **`references/composition-patterns.md`** — five recipes worked out in detail, with section ordering and rationale.
+- **`examples/full-landing-page.json`** — one complete canonical page object showing multi-section composition.
+- **`mcp__plugin_supa-page-plugin_supa-page__list_blocks`** — runtime catalogue.
+- **`mcp__plugin_supa-page-plugin_supa-page__get_block`** — runtime schema + examples for one type.
+- **`mcp__plugin_supa-page-plugin_supa-page__validate_block`** — runtime validator (canonical pre-flight).
+- **`plugin/shared/block-schemas.json`** — offline snapshot of all 24 schemas + examples (regenerated by `bun run build:schemas` in the supa-page repo).
